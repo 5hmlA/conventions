@@ -37,7 +37,18 @@ abstract class DisplayApksTask : DefaultTask() {
 //class CustomSettings: Plugin<Settings> {
 class TestConfig : Plugin<Project> {
     override fun apply(target: Project) {
-//        target.plugins.withType(AppPlugin::class.java){}
+        // Registers a callback on the application of the Android Application plugin.
+        // This allows the CustomPlugin to work whether it's applied before or after
+        // the Android Application plugin.
+//        target.plugins.withType(AppPlugin::class.java){
+//            //application
+//            println("================AppPlugin=============================")
+//        }
+//        target.plugins.withType(BasePlugin::class.java){
+//            //application or library
+//            println("================BasePlugin=============================")
+//        }
+
         with(target) {
             log("=========================== START【${this@TestConfig}】 =========================")
 
@@ -65,16 +76,18 @@ class TestConfig : Plugin<Project> {
                         apkFolder.set(variant.artifacts.get(SingleArtifact.APK))
                         builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
                     }
-
-
-                    val get = variant.artifacts.get(SingleArtifact.APK)
-                    println("-----------ggeet---- ${get}")
+                    val apkParentDir = variant.artifacts.get(SingleArtifact.APK)
                     afterEvaluate {
-                        println("-----------ggeet--afterEvaluate-- ${get.get().asFile.absolutePath}")
-                        val load = variant.artifacts.getBuiltArtifactsLoader().load(get.get())
-                        println("-----------ggeet--load-- $load")
-                        get.get().asFileTree.forEach {
-                            println("-----------ggeet--asFileTree-- ${it}")
+                        apkParentDir.orNull?.let {
+                            log(" > afterEvaluate > ${variant.flavorName} apkParentDir = ${apkParentDir.get().asFile.absolutePath}")
+                            val builtArtifacts = variant.artifacts.getBuiltArtifactsLoader().load(apkParentDir.get())
+                            log(" > afterEvaluate > ${variant.flavorName} builtArtifacts = $builtArtifacts")
+                            builtArtifacts?.elements?.forEach {
+                                log(" > afterEvaluate > ${variant.flavorName} builtArtifacts apk path = ${it.outputFile}")
+                            }
+                            apkParentDir.get().asFileTree.forEach {
+                                log(" > afterEvaluate > ${variant.flavorName} apkParentDir FileTree > ${it.absolutePath}")
+                            }
                         }
                     }
 //                    onVariants(selector().all(), {

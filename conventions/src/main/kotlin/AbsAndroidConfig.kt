@@ -1,3 +1,4 @@
+import com.android.build.gradle.BasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
@@ -50,26 +51,33 @@ abstract class AbsAndroidConfig : Plugin<Project> {
     abstract fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit
 
     override fun apply(target: Project) {
-        with(target) {
-            log("=========================== START【${this@AbsAndroidConfig}】 =========================")
-            log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
-            log("https://github.com/android/gradle-recipes")
-            with(pluginManager) {
-                pluginConfigs()()
-            }
-            val catalog = vlibs
-            androidExtension?.apply {
-                androidExtensionConfig()(target, catalog)
-            }
-            tasks.withType<KotlinCompile>().configureEach {
-                kotlinOptions {
-                    kotlinOptionsConfig()(target)
+        // Registers a callback on the application of the Android Application plugin.
+        // This allows the CustomPlugin to work whether it's applied before or after
+        // the Android Application plugin.
+        target.plugins.withType(BasePlugin::class.java) {
+            //application or library
+            println("================BasePlugin=============================")
+            with(target) {
+                log("=========================== START【${this@AbsAndroidConfig}】 =========================")
+                log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
+                log("https://github.com/android/gradle-recipes")
+                with(pluginManager) {
+                    pluginConfigs()()
                 }
+                val catalog = vlibs
+                androidExtension?.apply {
+                    androidExtensionConfig()(target, catalog)
+                }
+                tasks.withType<KotlinCompile>().configureEach {
+                    kotlinOptions {
+                        kotlinOptionsConfig()(target)
+                    }
+                }
+                dependencies {
+                    dependenciesConfig()(catalog)
+                }
+                log("=========================== END【${this@AbsAndroidConfig}】 =========================")
             }
-            dependencies {
-                dependenciesConfig()(catalog)
-            }
-            log("=========================== END【${this@AbsAndroidConfig}】 =========================")
         }
     }
 }

@@ -8,7 +8,6 @@ import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
-import java.net.URI
 
 open class AndroidConfig : Plugin<Project> {
 
@@ -103,6 +102,7 @@ open class AndroidConfig : Plugin<Project> {
                     kotlinOptionsConfig()(target)
                 }
             }
+            //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {
                 //<editor-fold desc="android project default dependencies">
                 val koin_bom = vlibs.findLibrary("koin-bom").get()
@@ -124,13 +124,19 @@ open class AndroidConfig : Plugin<Project> {
                 dependenciesConfig()(catalog)
             }
             log("=========================== END【${this@AndroidConfig}】 =========================")
-
 //            生成apk地址
+//            https://github.com/android/gradle-recipes/blob/agp-8.4/allProjectsApkAction/README.md
 //            com.android.build.gradle.internal.variant.VariantPathHelper.getApkLocation
 //            com.android.build.gradle.internal.variant.VariantPathHelper.getDefaultApkLocation
+//            com.android.build.gradle.tasks.PackageApplication
+
+
 //            layout.buildDirectory.set(f.absolutePath)
 //            修改as生成缓存的地址
 
+
+//            transform
+//            https://github.com/android/gradle-recipes/blob/agp-8.4/transformAllClasses/README.md
         }
     }
 

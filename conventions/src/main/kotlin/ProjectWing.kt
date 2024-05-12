@@ -23,7 +23,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
 import org.gradle.kotlin.dsl.getByType
 import java.net.URI
 
@@ -85,7 +84,7 @@ fun Collection<*>.toStr(): String {
     return toTypedArray().contentToString()
 }
 
-fun RepositoryHandler.chinaRepos(){
+fun RepositoryHandler.chinaRepos() {
     maven {
         name = "tencent"
         isAllowInsecureProtocol = true
