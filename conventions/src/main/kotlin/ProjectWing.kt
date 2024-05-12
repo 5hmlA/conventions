@@ -22,7 +22,10 @@ import com.android.build.api.variant.AndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
 import org.gradle.kotlin.dsl.getByType
+import java.net.URI
 
 val Project.vlibs
     get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
@@ -80,4 +83,35 @@ fun Project.changeAPkName(name: String) {
 
 fun Collection<*>.toStr(): String {
     return toTypedArray().contentToString()
+}
+
+fun RepositoryHandler.chinaRepos(){
+    maven {
+        name = "tencent"
+        isAllowInsecureProtocol = true
+        url = URI.create("https://mirrors.tencent.com/nexus/repository/maven-public/")
+    }
+    maven {
+        name = "ali"
+        isAllowInsecureProtocol = true
+        url = URI.create("https://maven.aliyun.com/repository/public")
+    }
+    google()
+    mavenCentral()
+    maven {
+        name = "5hmlA"
+        isAllowInsecureProtocol = true
+        url = URI.create("https://maven.pkg.github.com/5hmlA/sparkj")
+        credentials {
+            // https://www.sojson.com/ascii.html
+            username = "5hmlA"
+            password = "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"
+        }
+    }
+    gradlePluginPortal()
+    maven {
+        name = "tencent.plugins"
+        isAllowInsecureProtocol = true
+        url = URI.create("https://mirrors.tencent.com/nexus/repository/gradle-plugins/")
+    }
 }

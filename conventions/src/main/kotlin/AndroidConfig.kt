@@ -4,12 +4,11 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 import org.gradle.api.plugins.PluginManager
-import org.gradle.kotlin.dsl.DependencyHandlerScope
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.repositories
-import org.gradle.kotlin.dsl.withType
+import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.File
+import java.net.URI
 
 open class AndroidConfig : Plugin<Project> {
 
@@ -56,39 +55,10 @@ open class AndroidConfig : Plugin<Project> {
             log("=========================== START【${this@AndroidConfig}】 =========================")
             log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
             log("https://github.com/android/gradle-recipes")
-            log("========= Project.layout ${layout.buildDirectory.javaClass} ${layout.buildDirectory.asFile.get().absolutePath}")
-//            log("========= Project.buildDir ${buildDir} =========================")
 
-            repositories.forEach {
-                log("> repositories ${it.name} > ${it.javaClass} =========================")
-            }
+            buildCacheDir()
 
-            try {
-                repositories {
-                    maven {
-                        url = uri("https://maven.pkg.github.com/5hmlA/sparkj")
-                        credentials {
-                            // https://www.sojson.com/ascii.html
-                            username = "\\u005a\\u0075\\u0059\\u0075\\u006e"
-                            password = "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"
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                log("""
-                    ${e.message}\n
-                    报错原因是 repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS) 导致的
-                    修改为如下设置:
-                        dependencyResolutionManagement {
-                            repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
-                        }
-                    """.trimIndent().red
-                )
-
-            }
-            repositories.forEach {
-                log("> repositories ${it.name} > ${(it as DefaultMavenArtifactRepository).url} =========================")
-            }
+            repoConfig()
 
             with(pluginManager) {
                 //<editor-fold desc="android project default plugin">
@@ -117,6 +87,7 @@ open class AndroidConfig : Plugin<Project> {
                     // https://developer.android.com/studio/write/java11-minimal-support-table
                     sourceCompatibility = JavaVersion.VERSION_18
                     targetCompatibility = JavaVersion.VERSION_18
+                    encoding = "UTF-8"
 //                    isCoreLibraryDesugaringEnabled = true
                 }
                 //</editor-fold>
@@ -160,6 +131,54 @@ open class AndroidConfig : Plugin<Project> {
 //            layout.buildDirectory.set(f.absolutePath)
 //            修改as生成缓存的地址
 
+        }
+    }
+
+    private fun Project.buildCacheDir() {
+        log("========= Project.layout ${layout.buildDirectory.javaClass} ${layout.buildDirectory.asFile.get().absolutePath}")
+        log("👉 set『build.cache.root.dir=D』can change build cache dir to D:/0buildCache/")
+//            log("========= Project.buildDir ${buildDir} =========================")
+        properties["build.cache.root.dir"]?.let {
+            //https://github.com/gradle/gradle/issues/20210
+            //https://docs.gradle.org/current/userguide/upgrading_version_8.html#deprecations
+            layout.buildDirectory.set(File("$it:/0buildCache/${rootProject.name}/${project.name}"))
+            log("👉『${project.name}』buildDir is relocated to -> ${project.layout.buildDirectory.asFile.get()} 🥱")
+            //buildDir = File("E:/0buildCache/${rootProject.name}/${project.name}")
+        }
+    }
+
+    private fun Project.repoConfig() {
+        buildscript {
+            repositories.removeAll { true }
+            repositories {
+                chinaRepos()
+            }
+            repositories.forEach {
+                log("> Project.buildscript repositories ${it.name} >  =========================")
+            }
+        }
+
+        repositories.forEach {
+            log("> Project.repositories ${it.name} > ${it.javaClass} =========================")
+        }
+        try {
+            repositories {
+                chinaRepos()
+            }
+        } catch (e: Exception) {
+            log(
+                """
+                        ${e.message}\n
+                        报错原因是 repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS) 导致的
+                        修改为如下设置:
+                            dependencyResolutionManagement {
+                                repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+                            }
+                        """.trimIndent().red
+            )
+        }
+        repositories.forEach {
+            log("> Project.repositories ${it.name} > ${(it as DefaultMavenArtifactRepository).url} =========================")
         }
     }
 }
