@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 import org.gradle.api.plugins.PluginManager
+import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.encoding
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -35,6 +36,8 @@ open class AndroidConfig : Plugin<Project> {
      * ```
      */
     open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { _, _ -> }
+
+    open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
 
     open fun kotlinOptionsConfig(): KotlinCommonToolOptions.(Project) -> Unit = {}
 
@@ -68,31 +71,34 @@ open class AndroidConfig : Plugin<Project> {
                 pluginConfigs()()
             }
             val catalog = vlibs
-            androidExtension?.apply {
-                //<editor-fold desc="android project default config">
-                compileSdk = catalog.findVersion("android-compileSdk").get().requiredVersion.toInt()
-                defaultConfig {
-                    minSdk = catalog.findVersion("android-minSdk").get().requiredVersion.toInt()
-                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                    vectorDrawables {
-                        useSupportLibrary = true
+            androidComponents?.apply {
+                finalizeDsl { android ->
+                    with(android) {
+                        //<editor-fold desc="android project default config">
+                        compileSdk = catalog.findVersion("android-compileSdk").get().requiredVersion.toInt()
+                        defaultConfig {
+                            minSdk = catalog.findVersion("android-minSdk").get().requiredVersion.toInt()
+                            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                            vectorDrawables {
+                                useSupportLibrary = true
+                            }
+                        }
+                        buildFeatures {
+                            buildConfig = true
+                        }
+                        compileOptions {
+                            // Up to Java 11 APIs are available through desugaring
+                            // https://developer.android.com/studio/write/java11-minimal-support-table
+                            sourceCompatibility = JavaVersion.VERSION_18
+                            targetCompatibility = JavaVersion.VERSION_18
+                            encoding = "UTF-8"
+//                          isCoreLibraryDesugaringEnabled = true
+                        }
+                        //</editor-fold>
+                        androidExtensionConfig()(target, catalog)
                     }
                 }
-                buildFeatures {
-                    buildConfig = true
-                }
-                compileOptions {
-                    // Up to Java 11 APIs are available through desugaring
-                    // https://developer.android.com/studio/write/java11-minimal-support-table
-                    sourceCompatibility = JavaVersion.VERSION_18
-                    targetCompatibility = JavaVersion.VERSION_18
-                    encoding = "UTF-8"
-//                    isCoreLibraryDesugaringEnabled = true
-                }
-                //</editor-fold>
-                androidExtensionConfig()(target, catalog)
-
-
+                androidComponentsExtensionConfig()(target, catalog)
             }
             tasks.withType<KotlinCompile>().configureEach {
                 kotlinOptions {
@@ -105,21 +111,38 @@ open class AndroidConfig : Plugin<Project> {
             //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {
                 //<editor-fold desc="android project default dependencies">
-                val koin_bom = vlibs.findLibrary("koin-bom").get()
-                add("implementation", platform(koin_bom))
-                add("implementation", vlibs.findBundle("koin").get())
+                vWings?.findLibrary("koin-bom")?.ifPresent { koinBom ->
+                    add("implementation", platform(koinBom))
+                    add("implementation", vlibs.findBundle("koin").get())
+                }
 
-                val okhttp_bom = vlibs.findLibrary("okhttp-bom").get()
-                add("implementation", platform(okhttp_bom))
-                add("implementation", vlibs.findBundle("okhttp").get())
+                vWings?.findLibrary("okhttp-bom")?.ifPresent { okhttpBom ->
+                    add("implementation", platform(okhttpBom))
+                    add("implementation", vlibs.findBundle("okhttp").get())
+                }
 
-                add("implementation", vlibs.findBundle("android-project").get())
-                add("implementation", vlibs.findBundle("sparkj").get())
-                add("implementation", vlibs.findBundle("ktor").get())
-
-                add("testImplementation", vlibs.findLibrary("test-junit").get())
-                add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-test-manifest").get())
-                add("androidTestImplementation", vlibs.findBundle("androidx-benchmark").get())
+                vWings?.findBundle("android-project")?.ifPresentOrElse({androidProject ->
+                    add("implementation", androidProject)
+                }){
+                    add("implementation", vlibs.findLibrary("androidx-appcompat").get())
+                    add("implementation", vlibs.findLibrary("androidx-core-ktx").get())
+                }
+                vWings?.findBundle("sparkj")?.ifPresent { sparkj ->
+                    add("implementation", sparkj)
+                }
+                vlibs.findBundle("ktor").ifPresent { ktor ->
+                    add("implementation", ktor)
+                }
+                vlibs.findLibrary("test-junit").ifPresent { jUnit ->
+                    add("testImplementation", jUnit)
+                }
+                vlibs.findLibrary("androidx-compose-ui-test-manifest").ifPresent { androidxCompose ->
+                    add("androidTestImplementation", androidxCompose)
+                    add("debugImplementation", androidxCompose)
+                }
+                vlibs.findBundle("androidx-benchmark").ifPresent { androidxBenchmark ->
+                    add("androidTestImplementation", androidxBenchmark)
+                }
                 //</editor-fold>
                 dependenciesConfig()(catalog)
             }
@@ -143,8 +166,9 @@ open class AndroidConfig : Plugin<Project> {
     private fun Project.buildCacheDir() {
         log("========= Project.layout ${layout.buildDirectory.javaClass} ${layout.buildDirectory.asFile.get().absolutePath}")
         log("👉 set『build.cache.root.dir=D』can change build cache dir to D:/0buildCache/")
-//            log("========= Project.buildDir ${buildDir} =========================")
-        properties["build.cache.root.dir"]?.let {
+//      log("========= Project.buildDir ${buildDir} =========================")
+        val buildDir = properties["build.cache.root.dir"] ?: System.getenv("build.cache.root.dir")
+        buildDir?.let {
             //https://github.com/gradle/gradle/issues/20210
             //https://docs.gradle.org/current/userguide/upgrading_version_8.html#deprecations
             layout.buildDirectory.set(File("$it:/0buildCache/${rootProject.name}/${project.name}"))

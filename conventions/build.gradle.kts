@@ -1,8 +1,10 @@
 plugins {
     `kotlin-dsl`
     `kotlin-dsl-precompiled-script-plugins`
-    `java-library`
-    `maven-publish`
+//    `java-gradle-plugin`
+//    kotlin("jvm") version "1.9.22"
+//    `maven-publish`
+    //define『plugin portal -> publishPlugins』 task
     id("com.gradle.plugin-publish") version "1.2.1"
 }
 
@@ -29,7 +31,7 @@ dependencies {
 //    val kagp = sysprop("dep.kagp.ver", "1.9.24")
 //    val pgp = sysprop("dep.pgp.ver", "0.9.4")
 
-    val agpVersion = "8.2.0"
+    val agpVersion = "8.4.0"
 //    compileOnly("com.android.tools.build:gradle:$agpVersion")
     compileOnly("com.android.tools.build:gradle-api:$agpVersion")
 //    compileOnly("com.gradle.publish:plugin-publish-plugin:1.2.1")
@@ -39,6 +41,7 @@ dependencies {
 //    kotlin("gradle-plugin", "1.9.24") == org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24
     compileOnly(kotlin(module = "gradle-plugin", version = "1.9.24"))
     implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
+    implementation(gradleKotlinDsl())
     // help->dependencies只会输出implementation的库的依赖关系
 }
 
@@ -50,8 +53,6 @@ dependencies {
 group = "io.github.5hmlA"
 version = "0.1"
 
-//学习如何使用 agp api
-// https://github.com/android/gradle-recipes/tree/agp-8.4
 publishing {
     repositories {
         maven {
@@ -59,7 +60,7 @@ publishing {
             url = uri("https://maven.pkg.github.com/5hmlA/sparkj")
             credentials {
                 username = System.getenv("GITHUB_USER")
-                password = System.getenv("GITHUB_TOKEN")
+                password = "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"
             }
         }
         maven {
@@ -70,17 +71,7 @@ publishing {
     }
 }
 
-tasks.create("before publishPlugins") {
-    doFirst {
-        " >> do First before publishPlugins".print()
-//        val plugins = rootProject.extensions.getByType<GradlePluginDevelopmentExtension>().plugins
-//        plugins.forEach {
-//            println("- plugin -- ${it.name} ${it.id} ${it.displayName}")
-//        }
-    }
-    tasks.findByName("publishPlugins")?.dependsOn(this)
-}
-
+//插件推送之前 先去掉不符合规范的插件
 tasks.findByName("publishPlugins")?.doFirst {
     //doFirst on task ':conventions:publishPlugins'
     ">> doFirst on $this ${this.javaClass}".print()
@@ -120,6 +111,13 @@ gradlePlugin {
             description = "protobuf config for any gradle project, necessary configuration and dependencies will be automatically set up"
             tags = listOf("protobuf", "config", "convention")
             implementationClass = "ProtobufConfig"
+        }
+        register("agp-knife") {
+            id = "${group}.knife"
+            displayName = "agp knife plugin"
+            description = "Simplify the use of complex agp api and isolate the differences between different agp versions"
+            tags = listOf("android gradle plugin", "knife", "convention")
+            implementationClass = "AGPKnifePlugin"
         }
 
 //        因为xxx.gradle.kts注册插件的时候不会设置displayName 尝试这里覆盖注册，结果无效，

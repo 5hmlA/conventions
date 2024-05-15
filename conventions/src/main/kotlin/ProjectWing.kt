@@ -19,15 +19,23 @@
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.VariantDimension
 import com.android.build.api.variant.AndroidComponentsExtension
+import knife.KnifeExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
 import java.net.URI
+import kotlin.jvm.optionals.getOrNull
 
 val Project.vlibs
     get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+val Project.vWings
+    get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
+
+fun Project.knife(config: KnifeExtension.()->Unit) = extensions.getByType<KnifeExtension>().config()
 
 fun Project.log(msg: String) {
 //    println("\uD83C\uDF89 \uD83D\uDCE3 \uD83C\uDF97\uFE0F $name >>> $msg".yellow)
@@ -35,10 +43,10 @@ fun Project.log(msg: String) {
 }
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
-typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *>
+typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *, *>
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
-typealias AndroidComponentsExtensions = AndroidComponentsExtension<*, *, *>
+typealias AndroidComponentsExtensions = AndroidComponentsExtension<CommonExtension<*, *, *, *, *, *>, *, *>
 
 /**
  * @deprecated Use {@code androidComponents} instead

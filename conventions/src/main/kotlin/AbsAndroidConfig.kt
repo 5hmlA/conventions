@@ -9,7 +9,13 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-abstract class AbsAndroidConfig : Plugin<Project> {
+
+/**
+ *
+ * 学习如何使用 agp api
+ * https://github.com/android/gradle-recipes/tree/agp-8.4
+ */
+open class AbsAndroidConfig : Plugin<Project> {
 
     /**
      * ```kotlin
@@ -21,7 +27,7 @@ abstract class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    abstract fun pluginConfigs(): PluginManager.() -> Unit
+    open fun pluginConfigs(): PluginManager.() -> Unit = {}
 
     /**
      * ```kotlin
@@ -34,10 +40,12 @@ abstract class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    abstract fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit
+    open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { project, versionCatalog -> }
+
+    open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
 
 
-    abstract fun kotlinOptionsConfig(): KotlinCommonToolOptions.(Project) -> Unit
+    open fun kotlinOptionsConfig(): KotlinCommonToolOptions.(Project) -> Unit = { project -> }
 
     /**
      * ```kotlin
@@ -48,7 +56,7 @@ abstract class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    abstract fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit
+    open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { versionCatalog -> }
 
     override fun apply(target: Project) {
         // Registers a callback on the application of the Android Application plugin.
@@ -65,8 +73,13 @@ abstract class AbsAndroidConfig : Plugin<Project> {
                     pluginConfigs()()
                 }
                 val catalog = vlibs
-                androidExtension?.apply {
-                    androidExtensionConfig()(target, catalog)
+                androidComponents?.apply {
+                    finalizeDsl { android ->
+                        with(android) {
+                            androidExtensionConfig()(target, catalog)
+                        }
+                    }
+                    androidComponentsExtensionConfig()(target, catalog)
                 }
                 tasks.withType<KotlinCompile>().configureEach {
                     kotlinOptions {

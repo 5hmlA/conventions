@@ -18,12 +18,13 @@ class AndroidComposeConfig : AndroidConfig() {
     }
 
     override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { vlibs: VersionCatalog ->
-        val bom = vlibs.findLibrary("androidx-compose-bom").get()
-        add("implementation", platform(bom))
-        add("androidTestImplementation", platform(bom))
-        add("implementation", vlibs.findBundle("compose").get())
-        add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling-preview").get())
-        add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling").get())
+        vlibs.findLibrary("androidx-compose-bom").ifPresent { bom ->
+            add("implementation", platform(bom))
+            add("androidTestImplementation", platform(bom))
+            add("implementation", vlibs.findBundle("compose").get())
+            add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling-preview").get())
+            add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling").get())
+        }
     }
 
 
@@ -34,7 +35,6 @@ class AndroidComposeConfig : AndroidConfig() {
             freeCompilerArgs += strongSkippingConfiguration()
         }
     }
-
 }
 
 private fun Project.buildComposeMetricsParameters(): List<String> {
