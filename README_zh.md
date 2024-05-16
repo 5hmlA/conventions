@@ -1,5 +1,7 @@
 # conventions plugin for gradle
 
+[![](https://img.shields.io/badge/中文-README-lightgreen.svg)](https://github.com/5hmlA/conventions/blob/main/README_zh.md)
+
 ![](https://img.shields.io/badge/Android-Plugins-brightgreen.svg)
 
 [![License](https://img.shields.io/badge/LICENSE-Apache%202-green.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0)
