@@ -1,5 +1,11 @@
 # conventions plugin for gradle
 
+![](https://img.shields.io/badge/Android-Plugins-brightgreen.svg)
+
+[![License](https://img.shields.io/badge/LICENSE-Apache%202-green.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0) 
+
+![](https://img.shields.io/badge/Android%20Gradle%20Plugin-8.3+-lightgreen.svg)
+
 # Summary
 Some plugins that simplify the configuration of gradle projects can improve the efficiency of gradle project configuration. Especially in multi-module projects, they can unify the consistency of each module and support the configuration of specific dependent versions. Modifications in one place will take effect globally.
 
@@ -8,7 +14,7 @@ Some plugins that simplify the configuration of gradle projects can improve the 
 - You can get ````libs.versions.toml```` file from [android/nowinandroid](https://github.com/android/nowinandroid) (of course you can also get it from this project) , then Configure it in the gradle directory of your project
 - 你可以自定义修改 ```libs.versions.toml```中的版本号，注意只能修改版本号
 ## Plugin usage
-##### 1，Configure the compose capability for the Android project. After adding this plug-in, you can use compose in the project
+### 1，Configure the compose capability for the Android project. After adding this plug-in, you can use compose in the project
 ```kotlin
 plugins {
     id("com.android.application")
@@ -64,7 +70,7 @@ dependencies {
 ```
 
 
-##### 2， For the basic configuration of the Android project, just add the following plug-in. This plug-in will automatically add the necessary dependencies for the Android project.
+### 2， For the basic configuration of the Android project, just add the following plug-in. This plug-in will automatically add the necessary dependencies for the Android project.
 ```kotlin
 plugins {
     id("com.android.application")
@@ -72,14 +78,14 @@ plugins {
 }
 ```
 
-##### 3， Configure protobuf for the gradle project. After configuring this plug-in, protobuf can be used normally in the project without additional configuration.
+### 3， Configure protobuf for the gradle project. After configuring this plug-in, protobuf can be used normally in the project without additional configuration.
 ```kotlin
 plugins {
     id("io.github.5hmlA.protobuf")
 }
 ```
 
-##### 4，Use plug-ins in combination, android projects use compose and protobuf at the same time
+### 4，Use plug-ins in combination, android projects use compose and protobuf at the same time
 ```kotlin
 plugins {
     id("com.android.application")
@@ -88,7 +94,7 @@ plugins {
 }
 ```
 
-#### 5， Simplify the use of AGP API and isolate the differences between different versions of AGP API
+### 5， Simplify the use of AGP API and isolate the differences between different versions of AGP API
 ```kotlin
 plugins {
     id("com.android.application")
