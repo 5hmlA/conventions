@@ -18,9 +18,10 @@ class ProtobufConfig : Plugin<Project> {
                 apply("com.google.protobuf")
             }
             val pbExtension = extensions.findByType<com.google.protobuf.gradle.ProtobufExtension>()
+            val catalog = vlibs
             pbExtension?.apply {
                 protoc {
-                    artifact = "com.google.protobuf:protoc:${vlibs.findVersion("protobuf").get()}"
+                    artifact = "com.google.protobuf:protoc:${catalog.findVersion("protobuf").get()}"
                 }
                 generateProtoTasks {
                     all().forEach { task ->
@@ -36,7 +37,7 @@ class ProtobufConfig : Plugin<Project> {
                 }
             }
             dependencies {
-                add("implementation", vlibs.findLibrary("protobuf-kotlin").get())
+                add("implementation", catalog.findLibrary("protobuf-kotlin").get())
             }
 
             println("protobuf文档: https://protobuf.dev/")

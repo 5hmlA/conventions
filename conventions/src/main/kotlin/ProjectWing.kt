@@ -16,10 +16,13 @@
 
 @file:Suppress("UNCHECKED_CAST")
 
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.VariantDimension
 import com.android.build.api.variant.AndroidComponentsExtension
 import knife.KnifeExtension
+import knife.VariantAction
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -29,18 +32,24 @@ import org.gradle.kotlin.dsl.getByType
 import java.net.URI
 import kotlin.jvm.optionals.getOrNull
 
-val Project.vlibs
-    get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
-
-val Project.vWings
-    get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
-
-fun Project.knife(config: KnifeExtension.()->Unit) = extensions.getByType<KnifeExtension>().config()
 
 fun Project.log(msg: String) {
 //    println("\uD83C\uDF89 \uD83D\uDCE3 \uD83C\uDF97\uFE0F $name >>> $msg".yellow)
     println("\uD83C\uDF97\uFE0F $name >>> $msg".yellow)
 }
+
+
+internal val Project.vlibs
+    get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+internal val Project.vWings
+    get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
+
+fun Project.knife(config: KnifeExtension.() -> Unit) = extensions.getByType<KnifeExtension>().config()
+
+
+fun Project.onArtifactBuilt(listen: (String) -> Unit) =
+    extensions.getByType<KnifeExtension>().extensions.getByType<VariantAction>().onArtifactBuilt(listen)
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
 typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *, *>
@@ -56,6 +65,13 @@ val Project.androidExtension
 
 val Project.androidComponents
     get(): AndroidComponentsExtensions? = extensions.findByName("androidComponents") as? AndroidComponentsExtensions
+
+val Project.isAndroidApplication
+    get(): Boolean = androidComponents is ApplicationExtension
+
+val Project.isAndroidLibrary
+    get(): Boolean = androidComponents is LibraryExtension
+
 
 fun VariantDimension.defineStr(name: String, value: String) {
     buildConfigField("String", name, "\"$value\"")

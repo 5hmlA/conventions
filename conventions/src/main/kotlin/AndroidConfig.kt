@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
+import kotlin.jvm.optionals.getOrNull
 
 open class AndroidConfig : Plugin<Project> {
 
@@ -64,6 +65,7 @@ open class AndroidConfig : Plugin<Project> {
 
             with(pluginManager) {
                 //<editor-fold desc="android project default plugin">
+                //如果根build.gradle没在plugins中apply的话这里无法依赖，之后补充自动依赖
                 apply("kotlin-android")
 //                apply("org.jetbrains.kotlin.android")
                 apply("kotlin-parcelize")
@@ -71,6 +73,7 @@ open class AndroidConfig : Plugin<Project> {
                 pluginConfigs()()
             }
             val catalog = vlibs
+            val catalogWings = vWings
             androidComponents?.apply {
                 finalizeDsl { android ->
                     with(android) {
@@ -108,39 +111,53 @@ open class AndroidConfig : Plugin<Project> {
                     kotlinOptionsConfig()(target)
                 }
             }
+
             //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {
                 //<editor-fold desc="android project default dependencies">
-                vWings?.findLibrary("koin-bom")?.ifPresent { koinBom ->
-                    add("implementation", platform(koinBom))
-                    add("implementation", vlibs.findBundle("koin").get())
-                }
-
-                vWings?.findLibrary("okhttp-bom")?.ifPresent { okhttpBom ->
-                    add("implementation", platform(okhttpBom))
-                    add("implementation", vlibs.findBundle("okhttp").get())
-                }
-
-                vWings?.findBundle("android-project")?.ifPresentOrElse({androidProject ->
+                catalogWings?.findBundle("android-project")?.getOrNull()?.let { androidProject ->
+                    log("implementation(android-project)")
                     add("implementation", androidProject)
-                }){
-                    add("implementation", vlibs.findLibrary("androidx-appcompat").get())
-                    add("implementation", vlibs.findLibrary("androidx-core-ktx").get())
+                } ?: run {
+                    log("implementation(androidx...appcompat)")
+                    add("implementation", catalog.findLibrary("androidx-navigation-ui-ktx").get())
+                    add("implementation", catalog.findLibrary("androidx-navigation-fragment-ktx").get())
+                    add("implementation", catalog.findLibrary("lifecycle-livedata-ktx").get())
+                    add("implementation", catalog.findLibrary("lifecycle-viewmodel-ktx").get())
+                    add("implementation", catalog.findLibrary("google-material").get())
+                    add("implementation", catalog.findLibrary("androidx-appcompat").get())
+                    add("implementation", catalog.findLibrary("androidx-core-ktx").get())
+                    add("implementation", catalog.findLibrary("androidx-constraintlayout").get())
                 }
-                vWings?.findBundle("sparkj")?.ifPresent { sparkj ->
+                catalogWings?.findBundle("sparkj")?.ifPresent { sparkj ->
+                    log("implementation(sparkj)")
                     add("implementation", sparkj)
                 }
-                vlibs.findBundle("ktor").ifPresent { ktor ->
+                catalogWings?.findBundle("android-view")?.ifPresent { sparkj ->
+                    log("implementation(android-view)")
+                    add("implementation", sparkj)
+                }
+
+                catalog.findBundle("koin-bom").ifPresent { koinBom ->
+                    log("implementation(koin-bom)")
+                    add("implementation", platform(koinBom))
+                    add("implementation", catalog.findBundle("koin").get())
+                }
+
+                catalog.findBundle("okhttp-bom").ifPresent { okhttpBom ->
+                    log("implementation(okhttp-bom)")
+                    add("implementation", platform(okhttpBom))
+                    add("implementation", catalog.findBundle("okhttp").get())
+                }
+                catalog.findBundle("ktor").ifPresent { ktor ->
+                    log("implementation(ktor)")
                     add("implementation", ktor)
                 }
-                vlibs.findLibrary("test-junit").ifPresent { jUnit ->
+                catalog.findLibrary("test-junit").ifPresent { jUnit ->
                     add("testImplementation", jUnit)
                 }
-                vlibs.findLibrary("androidx-compose-ui-test-manifest").ifPresent { androidxCompose ->
-                    add("androidTestImplementation", androidxCompose)
-                    add("debugImplementation", androidxCompose)
-                }
-                vlibs.findBundle("androidx-benchmark").ifPresent { androidxBenchmark ->
+                catalog.findBundle("androidx-benchmark").ifPresent { androidxBenchmark ->
+//                    包括 androidx-test-ext-junit , androidx-test-espresso-core
                     add("androidTestImplementation", androidxBenchmark)
                 }
                 //</editor-fold>
@@ -153,10 +170,8 @@ open class AndroidConfig : Plugin<Project> {
 //            com.android.build.gradle.internal.variant.VariantPathHelper.getDefaultApkLocation
 //            com.android.build.gradle.tasks.PackageApplication
 
-
 //            layout.buildDirectory.set(f.absolutePath)
 //            修改as生成缓存的地址
-
 
 //            transform
 //            https://github.com/android/gradle-recipes/blob/agp-8.4/transformAllClasses/README.md

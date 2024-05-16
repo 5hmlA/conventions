@@ -14,6 +14,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  *
  * 学习如何使用 agp api
  * https://github.com/android/gradle-recipes/tree/agp-8.4
+ *
+ * https://developer.android.google.cn/build/extend-agp?hl=zh-cn#variant-api-artifacts-tasks
+ *
+ * https://docs.gradle.org/current/userguide/writing_plugins.html
+ *
+ * https://medium.com/androiddevelopers/gradle-and-agp-build-apis-taking-your-plugin-to-the-next-step-95e7bd1cd4c9
+ *
+ * https://medium.com/androiddevelopers/new-apis-in-the-android-gradle-plugin-f5325742e614
+ *
  */
 open class AbsAndroidConfig : Plugin<Project> {
 
@@ -64,7 +73,6 @@ open class AbsAndroidConfig : Plugin<Project> {
         // the Android Application plugin.
         target.plugins.withType(BasePlugin::class.java) {
             //application or library
-            println("================BasePlugin=============================")
             with(target) {
                 log("=========================== START【${this@AbsAndroidConfig}】 =========================")
                 log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")

@@ -13,26 +13,6 @@ import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.register
 
-abstract class DisplayApksTask : DefaultTask() {
-
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val apkFolder: DirectoryProperty
-
-    @get:Internal
-    abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
-
-    @TaskAction
-    fun taskAction() {
-
-        val builtArtifacts = builtArtifactsLoader.get().load(apkFolder.get())
-            ?: throw RuntimeException("Cannot load APKs")
-        builtArtifacts.elements.forEach {
-            println("Got an APK at ${it.outputFile}")
-        }
-    }
-}
-
 //https://medium.com/androiddevelopers/new-apis-in-the-android-gradle-plugin-f5325742e614
 //class CustomSettings: Plugin<Settings> {
 class TestConfig : Plugin<Project> {
@@ -71,36 +51,6 @@ class TestConfig : Plugin<Project> {
 //                    println("variant.buildConfigFields = ${variant.buildConfigFields.keySet().get().toStr()}")
 //                    println("variant.applicationId = ${variant.applicationId.get()}")
                     println("variant.name = ${variant.name}")
-                    val displayApksTaskProvider = tasks.register<DisplayApksTask>("${variant.name}DisplayApks") {
-                        group = "display group"
-                        apkFolder.set(variant.artifacts.get(SingleArtifact.APK))
-                        builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
-                    }
-                    val apkParentDir = variant.artifacts.get(SingleArtifact.APK)
-                    afterEvaluate {
-                        apkParentDir.orNull?.let {
-                            log(" > afterEvaluate > ${variant.flavorName} apkParentDir = ${apkParentDir.get().asFile.absolutePath}")
-                            val builtArtifacts = variant.artifacts.getBuiltArtifactsLoader().load(apkParentDir.get())
-                            log(" > afterEvaluate > ${variant.flavorName} builtArtifacts = $builtArtifacts")
-                            builtArtifacts?.elements?.forEach {
-                                log(" > afterEvaluate > ${variant.flavorName} builtArtifacts apk path = ${it.outputFile}")
-                            }
-                            apkParentDir.get().asFileTree.forEach {
-                                log(" > afterEvaluate > ${variant.flavorName} apkParentDir FileTree > ${it.absolutePath}")
-                            }
-                        }
-                    }
-//                    onVariants(selector().all(), {
-//                        variant.instrumentation.transformClassesWith(
-//                            AsmClassVisitorFactoryImpl.class,
-//                                    InstrumentationScope . Project
-//                        ) { params ->
-//                            params.x = "value"
-//                        }
-//                        instrumentation.setAsmFramesComputationMode(
-//                            COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
-//                        )
-//                    })
                     log("------variant class--------------${variant.javaClass}")
 //                    if (it is ApplicationVariantImpl) {
 //                        log("---------ApplicationVariantImpl--------- ${it.name}")

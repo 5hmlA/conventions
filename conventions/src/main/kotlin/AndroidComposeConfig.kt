@@ -25,6 +25,10 @@ class AndroidComposeConfig : AndroidConfig() {
             add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling-preview").get())
             add("debugImplementation", vlibs.findLibrary("androidx-compose-ui-tooling").get())
         }
+        vlibs.findLibrary("androidx-compose-ui-test-manifest").ifPresent { androidxCompose ->
+            add("androidTestImplementation", androidxCompose)
+            add("debugImplementation", androidxCompose)
+        }
     }
 
 

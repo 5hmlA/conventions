@@ -23,25 +23,21 @@ repositories {
     google()
 }
 
-
 dependencies {
     //includeBuild()中拿不到项目的properties，这里通过System.property取
 //    编译插件的时候就会用到，不需要配置，编译的时候修改就行了
 //    val agp = sysprop("dep.agp.ver", "8.2.0")
-//    val kagp = sysprop("dep.kagp.ver", "1.9.24")
-//    val pgp = sysprop("dep.pgp.ver", "0.9.4")
-
-    val agpVersion = "8.4.0"
-//    compileOnly("com.android.tools.build:gradle:$agpVersion")
-    compileOnly("com.android.tools.build:gradle-api:$agpVersion")
+    compileOnly("com.android.tools.build:gradle-api:${libs.versions.android.gradle.plugin.get()}")
+    compileOnly("com.android.tools.build:gradle:${libs.versions.android.gradle.plugin.get()}")
 //    compileOnly("com.gradle.publish:plugin-publish-plugin:1.2.1")
 //    https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 //    https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 //    https://github.com/JetBrains/kotlin/
 //    kotlin("gradle-plugin", "1.9.24") == org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24
-    compileOnly(kotlin(module = "gradle-plugin", version = "1.9.24"))
-    implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
-    implementation(gradleKotlinDsl())
+
+    compileOnly(kotlin(module = "gradle-plugin", version = libs.versions.kotlin.get()))
+    implementation("com.google.protobuf:protobuf-gradle-plugin:${libs.versions.protobuf.plugin.get()}")
+    compileOnly(gradleKotlinDsl())
     // help->dependencies只会输出implementation的库的依赖关系
 }
 

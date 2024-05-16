@@ -5,7 +5,7 @@
 
 # Getting Start
 ## 首先你必须启用*version catalog*
-- 你可以从[android/nowinandroid](https://github.com/android/nowinandroid)获取 ```libs.versions.toml```文件配置到你项目的gradle目录下
+- 你可以从[android/nowinandroid](https://github.com/android/nowinandroid)获取(当然也可以从本项目获取) ```libs.versions.toml```文件配置到你项目的gradle目录下
 - 你可以自定义修改 ```libs.versions.toml```中的版本号，注意只能修改版本号
 ## 插件使用
 ##### 1，为Android项目配置compose能力，添加此插件后即可在项目中使用compose
@@ -85,3 +85,31 @@ plugins {
     id("io.github.5hmlA.protobuf")
 }
 ```
+
+#### 5 简化AGP api的使用，隔离AGP不同版本api的差异
+```kotlin
+plugins {
+    id("com.android.application")
+    id("io.github.5hmlA.knife")
+}
+```
+如果你要监听Android项目中apk的生成，然后做一些操作比如备份apk，重签名等
+使用 knife 插件简化如下, 如果使用agp你必须通过自定义Task完成
+```kotlin
+knife {
+    onVariants {
+        //配置只在release上备份apk
+        if (it.name.contains("release")) {
+            onArtifactBuilt {
+                copy {
+                    //copy apk to rootDir
+                    from(it)
+                    //into a directory
+                    into(rootDir.absolutePath)
+                }
+            }
+        }
+    }
+}
+```
+>todo更多简化api正在持续开发中..
