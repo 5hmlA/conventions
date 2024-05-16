@@ -1,9 +1,11 @@
+import com.android.build.api.artifact.MultipleArtifact
+import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.instrumentation.InstrumentationScope
+import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
-import knife.KnifeExtensionImpl
-import knife.TaskListenApk
-import knife.VariantActionImpl
-import knife.pregnant
+import knife.*
+import knife.asm.SurgeryAsmClassVisitorFactory
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.kotlin.dsl.register
@@ -27,8 +29,34 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                     //存在listenArtifact的时候才创建task
                     tryListenArtifact(variantAction, project, variant)
                 }
+                //transform
+                variantAction.doAsmTransform = {
+                    //存在listenArtifact的时候才创建task
+                    tryAsmTransform(variantAction, project, variant)
+                }
 
                 it.invoke(variant)
+            }
+        }
+
+    }
+
+    private fun tryAsmTransform(variantAction: VariantActionImpl, project: Project, variant: Variant) {
+        project.log("knife -> tryAsmTransform:${variant.name}")
+        variantAction.transformWorker?.let { worker ->
+            val transformWorker = TransformWorker()
+            val checker = worker(transformWorker)
+            //https://github1s.com/android/gradle-recipes/blob/agp-8.2/asmTransformClasses/build-logic/plugins/src/main/kotlin/CheckAsmTransformationTask.kt
+            //https://github1s.com/android/gradle-recipes/blob/agp-8.2/asmTransformClasses/build-logic/plugins/src/main/kotlin/CustomPlugin.kt
+            variant.instrumentation.transformClassesWith(
+                SurgeryAsmClassVisitorFactory::class.java,
+                InstrumentationScope.ALL,
+            ) { params ->
+                params.buildType.set(variant.buildType)
+                params.flavorName.set(variant.flavorName)
+                params.variantName.set(variant.name)
+                params.instrumentChecker.set(checker)
+                params.classVisitor.set(transformWorker.classVisitor)
             }
         }
 

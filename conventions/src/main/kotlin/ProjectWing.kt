@@ -20,8 +20,10 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.VariantDimension
+import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.variant.AndroidComponentsExtension
 import knife.KnifeExtension
+import knife.TransformWorker
 import knife.VariantAction
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
@@ -47,6 +49,8 @@ internal val Project.vWings
 
 fun Project.knife(config: KnifeExtension.() -> Unit) = extensions.getByType<KnifeExtension>().config()
 
+fun Project.registerAsmTransform(worker: TransformWorker.() -> (ClassData) -> Boolean) =
+    extensions.getByType<KnifeExtension>().extensions.getByType<VariantAction>().registerAsmTransform(worker)
 
 fun Project.onArtifactBuilt(listen: (String) -> Unit) =
     extensions.getByType<KnifeExtension>().extensions.getByType<VariantAction>().onArtifactBuilt(listen)

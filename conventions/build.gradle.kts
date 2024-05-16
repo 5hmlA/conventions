@@ -47,7 +47,7 @@ dependencies {
 "======== rootProject= $rootProject".print()
 
 group = "io.github.5hmlA"
-version = "0.1"
+version = "1.0"
 
 publishing {
     repositories {
