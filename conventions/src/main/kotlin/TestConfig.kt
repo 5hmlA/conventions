@@ -1,17 +1,13 @@
-import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.BuiltArtifactsLoader
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.findByType
-import org.gradle.kotlin.dsl.register
+import wing.androidExtension
+import wing.androidExtensionComponent
+import wing.log
 
 //https://medium.com/androiddevelopers/new-apis-in-the-android-gradle-plugin-f5325742e614
 //class CustomSettings: Plugin<Settings> {
@@ -45,7 +41,7 @@ class TestConfig : Plugin<Project> {
 //            println("$projectName BaseAppModuleExtension =================== ${extensions.findByType<BaseAppModuleExtension>()}")
             println("$projectName getByName android ======================== ${extensions.findByName("android")}")
             println("$projectName getByName android ======================== ${androidExtension?.javaClass}")
-            androidComponents?.apply {
+            androidExtensionComponent?.apply {
                 onVariants { variant ->
                     println("variant.buildType = ${variant.buildType}")
 //                    println("variant.buildConfigFields = ${variant.buildConfigFields.keySet().get().toStr()}")

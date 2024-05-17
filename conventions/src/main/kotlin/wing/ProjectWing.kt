@@ -16,12 +16,16 @@
 
 @file:Suppress("UNCHECKED_CAST")
 
+package wing
+
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.VariantDimension
 import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import knife.KnifeExtension
 import knife.TransformWorker
 import knife.VariantAction
@@ -29,7 +33,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
-import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
 import java.net.URI
 import kotlin.jvm.optionals.getOrNull
@@ -67,14 +70,20 @@ typealias AndroidComponentsExtensions = AndroidComponentsExtension<CommonExtensi
 val Project.androidExtension
     get(): AndroidCommonExtension? = extensions.findByName("android") as? AndroidCommonExtension
 
-val Project.androidComponents
+val Project.androidExtensionComponent
     get(): AndroidComponentsExtensions? = extensions.findByName("androidComponents") as? AndroidComponentsExtensions
 
 val Project.isAndroidApplication
-    get(): Boolean = androidComponents is ApplicationExtension
+    get(): Boolean = androidExtension is ApplicationExtension
+
+val Project.isAndroidApp
+    get(): Boolean = androidExtensionComponent is ApplicationAndroidComponentsExtension
 
 val Project.isAndroidLibrary
-    get(): Boolean = androidComponents is LibraryExtension
+    get(): Boolean = androidExtension is LibraryExtension
+
+val Project.isAndroidLib
+    get(): Boolean = androidExtensionComponent is LibraryAndroidComponentsExtension
 
 
 fun VariantDimension.defineStr(name: String, value: String) {

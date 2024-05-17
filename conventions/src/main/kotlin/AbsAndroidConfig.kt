@@ -8,6 +8,11 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import wing.AndroidCommonExtension
+import wing.AndroidComponentsExtensions
+import wing.androidExtensionComponent
+import wing.log
+import wing.vlibs
 
 
 /**
@@ -81,7 +86,7 @@ open class AbsAndroidConfig : Plugin<Project> {
                     pluginConfigs()()
                 }
                 val catalog = vlibs
-                androidComponents?.apply {
+                androidExtensionComponent?.apply {
                     finalizeDsl { android ->
                         with(android) {
                             androidExtensionConfig()(target, catalog)

@@ -1,23 +1,21 @@
-import com.android.build.api.artifact.MultipleArtifact
-import com.android.build.api.artifact.ScopedArtifact
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.instrumentation.InstrumentationScope
-import com.android.build.api.variant.ScopedArtifacts
 import com.android.build.api.variant.Variant
 import knife.*
 import knife.asm.SurgeryAsmClassVisitorFactory
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.kotlin.dsl.register
-import java.util.Arrays
-import kotlin.math.log
+import wing.AndroidComponentsExtensions
+import wing.isAndroidApplication
+import wing.log
 
 //https://developer.android.google.cn/build/extend-agp?hl=zh-cn
 class AGPKnifePlugin : AbsAndroidConfig() {
     override fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { project, versionCatalog ->
         val knifeExtension = project.extensions.create("knife", KnifeExtensionImpl::class.java)
         val variantAction = knifeExtension.pregnant()
-        project.log("knife -> onVariant:${knifeExtension.onVariants}")
+        project.log("knife -> knifeExtension:${knifeExtension.onVariants}")
 
         /**
          * plugin中的onVariants{}会优先执行 ,所以app中建议用 beforeVariants{}遍历和配置

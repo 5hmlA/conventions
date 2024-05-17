@@ -1,6 +1,6 @@
 package knife
 
-import blue
+import wing.blue
 import com.android.build.api.variant.BuiltArtifactsLoader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty

@@ -2,6 +2,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
+import wing.AndroidCommonExtension
 
 class AndroidComposeConfig : AndroidConfig() {
 

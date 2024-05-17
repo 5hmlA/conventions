@@ -4,10 +4,17 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 import org.gradle.api.plugins.PluginManager
-import org.gradle.internal.impldep.org.eclipse.jgit.lib.ObjectChecker.encoding
 import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import wing.AndroidCommonExtension
+import wing.AndroidComponentsExtensions
+import wing.androidExtensionComponent
+import wing.chinaRepos
+import wing.log
+import wing.red
+import wing.vWings
+import wing.vlibs
 import java.io.File
 import kotlin.jvm.optionals.getOrNull
 
@@ -74,7 +81,7 @@ open class AndroidConfig : Plugin<Project> {
             }
             val catalog = vlibs
             val catalogWings = vWings
-            androidComponents?.apply {
+            androidExtensionComponent?.apply {
                 finalizeDsl { android ->
                     with(android) {
                         //<editor-fold desc="android project default config">

@@ -2,6 +2,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.findByType
+import wing.log
+import wing.vlibs
 
 /**
  * 插件引入方式

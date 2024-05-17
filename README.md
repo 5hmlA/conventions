@@ -12,7 +12,7 @@ Some plugins that simplify the configuration of gradle projects can improve the 
 # Getting Start
 ## First you have to enable *version catalog*
 - You can get ````libs.versions.toml```` file from [android/nowinandroid](https://github.com/android/nowinandroid) (of course you can also get it from this project) , then Configure it in the gradle directory of your project
-- 你可以自定义修改 ```libs.versions.toml```中的版本号，注意只能修改版本号
+- You can customize the version number in ````libs.versions.toml```` . Note that you can only modify the version number.
 ## Plugin usage
 ### 1，Configure the compose capability for the Android project. After adding this plug-in, you can use compose in the project
 ```kotlin

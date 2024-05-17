@@ -1,3 +1,6 @@
+import wing.log
+import wing.vlibs
+
 //https://docs.gradle.org/current/userguide/custom_plugins.html
 //预编译脚本插件
 //预编译脚本插件在执行之前会被编译成类文件并打包成 JAR。这些插件使用 Groovy 或 Kotlin DSL，
