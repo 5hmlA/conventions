@@ -22,10 +22,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun testRemove(num: Int) {
-
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
-
     }
 
     fun testChange(num: Int): String {

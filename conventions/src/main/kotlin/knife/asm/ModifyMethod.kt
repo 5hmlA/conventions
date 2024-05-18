@@ -50,7 +50,7 @@ internal fun String.toModifyConfig(): ModifyConfig {
     }
     // PrintStream#println#(I)V->dest/clazz
     val (oldInnerMethodStr, toClz) = innerMethodStr.split("->")
-    return ModifyConfig(targetMethod, MethodAction(oldInnerMethodStr.toMethodData(), toClz))
+    return ModifyConfig(targetMethod, MethodAction(oldInnerMethodStr.toMethodData(), toClz.replace(".","/")))
 }
 
 

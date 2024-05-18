@@ -22,7 +22,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "gradle-conventions"
+rootProject.name = "conventions"
 
 
 

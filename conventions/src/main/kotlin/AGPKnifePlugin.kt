@@ -57,7 +57,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                 println(transformConfigs.modifyConfigs.toStr().red)
                 return
             }
-        project.log("knife -> tryAsmTransform:${variant.name}  ${transformConfigs.modifyConfigs.toStr()}".red)
+            project.log("knife -> tryAsmTransform:${variant.name}  ${transformConfigs.modifyConfigs.toStr()}".red)
 
             val modifyConfigs = transformConfigs.modifyConfigs.map {
                 it.toModifyConfig()
@@ -67,7 +67,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
             //https://github1s.com/android/gradle-recipes/blob/agp-8.2/asmTransformClasses/build-logic/plugins/src/main/kotlin/CustomPlugin.kt
             variant.instrumentation.transformClassesWith(
                 SurgeryAsmClassVisitorFactory::class.java,
-                InstrumentationScope.PROJECT,
+                InstrumentationScope.ALL,
             ) { params ->
                 params.buildType.set(variant.buildType)
                 params.flavorName.set(variant.flavorName)
