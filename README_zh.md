@@ -105,15 +105,35 @@ plugins {
 使用 knife 插件简化如下, 如果使用agp你必须通过自定义Task完成
 ```kotlin
 knife {
-    onVariants {
-        //配置只在release上备份apk
-        if (it.name.contains("release")) {
-            onArtifactBuilt {
-                copy {
-                    //copy apk to rootDir
-                    from(it)
-                    //into a directory
-                    into(rootDir.absolutePath)
+    onVariants { variants ->
+        if (variants.name.contains("debug")) {
+            knifeActions {
+                asmTransform {
+                    //配置ASM处理
+                    //格式为【完整类名#方法名#方法签名|*|?】=>【完整类名#方法名#方法签名|*|?】->【完整类名】
+                    // 1 置空方法的实现：
+                    // "com.osp.app.MainActivity#testEmpty#*"
+                    // 把类MainActivity里面的testEmpty方法实现置空
+                    // 2 移除方法的调用：
+                    // "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*"
+                    // 移除 类MainActivity方法onCreate里面调用的testRemove()
+                    // 3 修改方法的调用：
+                    // "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change"
+                    // 修改 类MainActivity方法testChange里面调用的System.out.println()修改为静态调用hello.change.println()
+                    configs(
+                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testEmpty#*",
+                        "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",
+                    )
+                }
+                onArtifactBuilt {
+                    //当apk编译好的时候回调，备份apk
+                    copy {
+                        //copy apk to rootDir
+                        from(it)
+                        //into a directory
+                        into(rootDir.absolutePath)
+                    }
                 }
             }
         }

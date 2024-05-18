@@ -16,25 +16,25 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        testfun(1)
-        testfunReturnFloat(10)
-        testfunss(9)
+        testRemove(1)
+        testEmpty(10)
+        testChange(9)
     }
 
-    fun testfun(num: Int) {
+    fun testRemove(num: Int) {
 
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
 
     }
 
-    fun testfunss(num: Int):String {
+    fun testChange(num: Int): String {
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
         return "123"
     }
 
-    fun testfunReturnFloat(num: Int): Float {
+    fun testEmpty(num: Int): Float {
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
         return num * 2.0F

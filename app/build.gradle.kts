@@ -15,9 +15,9 @@ knife {
             knifeActions {
                 asmTransform {
                     configs(
-                        "com.osp.app.MainActivity#testfunss#?=>java/io/PrintStream#println#*->hello/change",
-                        "com.osp.app.MainActivity#testfunReturnFloat#*",
-                        "com.osp.app.MainActivity#onCreate#*=>*#testfun#*",
+                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testEmpty#*",
+                        "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",
                     )
                 }
                 onArtifactBuilt {

@@ -105,15 +105,35 @@ If you want to monitor the generation of apk in the Android project, and then do
 Using the knife plug-in is simplified as follows, if you use agp you must complete it through a custom Task
 ```kotlin
 knife {
-    onVariants {
-        //Configure to back up apk only on release
-        if (it.name.contains("release")) {
-            onArtifactBuilt {
-                copy {
-                    //copy apk to rootDir
-                    from(it)
-                    //into a directory
-                    into(rootDir.absolutePath)
+    onVariants { variants ->
+        if (variants.name.contains("debug")) {
+            knifeActions {
+                asmTransform {
+                    // Configure ASM processing
+                    // Format: [FullyQualifiedClassName#MethodName#MethodSignature|*|?]=>[FullyQualifiedClassName#MethodName#MethodSignature|*|?]->[FullyQualifiedClassName]
+                    // 1. Empty the method implementation:
+                    // "com.osp.app.MainActivity#testEmpty#*"
+                    // Empties the implementation of the testEmpty method in the MainActivity class.
+                    // 2. Remove the method call:
+                    // "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*"
+                    // Removes the testRemove() call inside the onCreate method of the MainActivity class.
+                    // 3. Modify the method call:
+                    // "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change"
+                    // Modifies the System.out.println() call inside the testChange method of the MainActivity class to a static call to hello.change.println().
+                    configs(
+                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testEmpty#*",
+                        "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",
+                    )
+                }
+                onArtifactBuilt {
+                    //Invoke a callback when the APK is compiled and back up the APK.
+                    copy {
+                        //copy apk to rootDir
+                        from(it)
+                        //into a directory
+                        into(rootDir.absolutePath)
+                    }
                 }
             }
         }
