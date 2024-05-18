@@ -1,14 +1,17 @@
 package knife.asm
 
 import com.android.build.api.instrumentation.*
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.Handle
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
+import wing.green
+import wing.purple
+import wing.red
+import wing.toStr
 
 abstract class SurgeryInstrumentationParameters : InstrumentationParameters {
 
@@ -23,115 +26,166 @@ abstract class SurgeryInstrumentationParameters : InstrumentationParameters {
 
     @get:Input
     @get:Optional
-    abstract val classVisitor: Property<ClassVisitor>
+    abstract val methodConfigs: MapProperty<String, List<ModifyConfig>>//一个方法名->对应多个操作
 
     @get:Input
     @get:Optional
-    abstract val instrumentChecker: Property<(ClassData) -> Boolean>
+    abstract val targetClasses: ListProperty<String>
 }
 
 //必须是抽象类，会自动实现部分方法
-abstract class SurgeryAsmClassVisitorFactory : AsmClassVisitorFactory<SurgeryInstrumentationParameters> {
+abstract class SurgeryAsmClassVisitorFactory :
+    AsmClassVisitorFactory<SurgeryInstrumentationParameters> {
 
 //    gradle会自动生成实现
 //    override val parameters: Property<SurgeryInstrumentationParameters>
 //        get() =
 
-    override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor {
-        println("xxxxxxxxxxxxxxxxxxxx ${classContext.toString()}")
-        return ClassMethodVisitor(instrumentationContext.apiVersion.get(), nextClassVisitor)
+    override fun createClassVisitor(
+        classContext: ClassContext,
+        nextClassVisitor: ClassVisitor
+    ): ClassVisitor {
+        println("xxxxxx ${classContext.currentClassData.className}")
+        return KnifeClassMethodVisitor(
+            parameters.get().methodConfigs.get(),
+            instrumentationContext.apiVersion.get(),
+            nextClassVisitor
+        )
     }
 
     override fun isInstrumentable(classData: ClassData): Boolean {
-        println("xxxxxxxxxxxxxxxxxxxx ${classData.className}")
-        return parameters.get().instrumentChecker.get()(classData)
+        return parameters.get().targetClasses.get().contains(classData.className)
     }
 }
 
 //https://www.kingkk.com/2020/08/ASM%E5%8E%86%E9%99%A9%E8%AE%B0/
-class ClassMethodVisitor(
-    val apiVersion: Int,
+class KnifeClassMethodVisitor(
+    private val methodConfigs: Map<String, List<ModifyConfig>>,
+    private val apiVersion: Int,
     cv: ClassVisitor,
 ) : ClassVisitor(apiVersion, cv) {
 
+    private var internalClass = ""
 
+    override fun visit(
+        version: Int,
+        access: Int,
+        name: String,
+        signature: String?,
+        superName: String?,
+        interfaces: Array<out String>?
+    ) {
+        internalClass = name
+        super.visit(version, access, name, signature, superName, interfaces)
+    }
+
+
+    /**
+     * 访问类的方法。如果方法匹配目标方法，则返回一个自定义的 MethodVisitor 来修改它。
+     *
+     * #### 参数descriptor详解
+     * 举例 **```(I)Ljava/lang/String;```**
+     * - 参数列表：由圆括号 () 包围。
+     *      - (I) 表示该方法有一个参数，其类型为 int。在描述符中，I 表示 int 类型。
+     * - 返回类型：在圆括号之后描述。
+     *      - Ljava/lang/String; 表示返回类型为 java.lang.String。在描述符中，对象类型以 L 开头，后跟类的完全限定名，最后以分号 ; 结尾。
+     *
+     *  - **对象类型：** L<classname>; 表示对象类型，其中 classname 是类的完全限定名
+     *  - **数组类型：** [<type> 表示数组类型，其中 <type> 可以是基本类型、对象类型或另一种数组类型。例如，[I 表示 int 数组，[[Ljava/lang/String; 表示 String 的二维数组。
+     *
+     *
+     * @param access 方法的访问标志（见 Opcodes）
+     *
+     * @param name 方法的名称
+     *
+     * @param descriptor 方法的描述符（见 Type）
+     *
+     * @param signature 方法的签名（可选，用于泛型）
+     *
+     * @param exceptions 方法的异常类的内部名称
+     *
+     * @return 用于访问方法代码的 MethodVisitor
+     */
     override fun visitMethod(
         access: Int,
-        name: String?,
-        descriptor: String?,
+        name: String,
+        descriptor: String,
         signature: String?,
         exceptions: Array<out String>?
     ): MethodVisitor? {
-        println("xxxxxxxxxxxxxxxxxxxx visitMethod> ${name}")
-        if (name != "someMethod") {
-            return super.visitMethod(access, name, descriptor, signature, exceptions)
-        }
-        val returnType = Type.getType(descriptor).returnType
-        if (returnType.sort >= Type.BOOLEAN && returnType.sort <= Type.DOUBLE) {
-            val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
-            mv.visitCode()
-            when (returnType.sort) {
-                Type.BOOLEAN -> {
-                    mv.visitInsn(Opcodes.ICONST_0)
-                    mv.visitInsn(Opcodes.IRETURN)
-                }
-                Type.CHAR -> {
-                    mv.visitInsn(Opcodes.ICONST_0)
-                    mv.visitInsn(Opcodes.IRETURN)
-                }
-                Type.BYTE -> {
-                    mv.visitInsn(Opcodes.ICONST_0)
-                    mv.visitInsn(Opcodes.IRETURN)
-                }
-                Type.SHORT -> {
-                    mv.visitInsn(Opcodes.ICONST_0)
-                    mv.visitInsn(Opcodes.IRETURN)
-                }
-                Type.INT -> {
-                    mv.visitInsn(Opcodes.ICONST_0)
-                    mv.visitInsn(Opcodes.IRETURN)
-                }
-                Type.LONG -> {
-                    mv.visitInsn(Opcodes.LCONST_0)
-                    mv.visitInsn(Opcodes.LRETURN)
-                }
-                Type.FLOAT -> {
-                    mv.visitInsn(Opcodes.FCONST_0)
-                    mv.visitInsn(Opcodes.FRETURN)
-                }
-                Type.DOUBLE -> {
-                    mv.visitInsn(Opcodes.DCONST_0)
-                    mv.visitInsn(Opcodes.DRETURN)
-                }
+        val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
+
+        val modifyConfigs = methodConfigs[name] ?: return visitMethod
+        val matchedModifyConfigs = modifyConfigs.filter { modifyConfig ->
+            if (modifyConfig.targetMethod.descriptor == "*" || modifyConfig.targetMethod.descriptor == "?") {
+                modifyConfig.targetMethod.internalClass == internalClass
+            } else {
+                modifyConfig.targetMethod.descriptor == descriptor && modifyConfig.targetMethod.internalClass == internalClass
             }
-            mv.visitMaxs(1, 1)
-            mv.visitEnd()
-            return mv
-        } else {
-            return super.visitMethod(access, name, descriptor, signature, exceptions)
         }
-    }
-}
 
-class MetohdCodeVisitor(
-    apiVersion: Int, nextVisitor: MethodVisitor
-) : MethodVisitor(apiVersion, nextVisitor) {
-    //    https://cloud.tencent.com/developer/article/1633443
-//    内部方法必须按照以下顺序调用（和MethodVisitor接口在Javadoc中指定的一些额外约束）
-//    visitAnnotationDefault?
-//    ( visitAnnotation | visitParameterAnnotation | visitAttribute )\*
-//    ( visitCode
-//    ( visitTryCatchBlock | visitLabel | visitFrame | visitXxx Insn | visitLocalVariable | visitLineNumber ) \*
-//    visitMaxs )?
-//    visitEnd
-    override fun visitMethodInsn(opcode: Int, owner: String?, name: String?, descriptor: String?, isInterface: Boolean) {
-        //方法内不调opcode用其他类owner的其他方法name
-        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-    }
+        if (matchedModifyConfigs.isEmpty()) {
+            return visitMethod
+        }
 
-//    https://jack-zheng.github.io/hexo/2020/09/07/ASM-quick-guide/
-    override fun visitInvokeDynamicInsn(name: String?, descriptor: String?, bootstrapMethodHandle: Handle?, vararg bootstrapMethodArguments: Any?) {
-        //检测 lambda 表达式
-        super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, *bootstrapMethodArguments)
+        val fullMethodName = "$internalClass#$name"
+        println("KnifeClassMethodVisitor >> [$fullMethodName], name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".purple)
+        //方法置空处理
+        val emptyMethodConfig = matchedModifyConfigs.find {
+            it.methodAction == null
+        }
+        if (emptyMethodConfig != null) {
+            //方法置空的话 后面就不需要处理了，后面都是方法内部的处理
+            println("need empty $emptyMethodConfig".green)
+            return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
+        }
+
+        val changeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
+            modifyConfig.methodAction!!.toNewClass != null
+        }.map { it.methodAction!! }
+
+        if (changeInvokeMethodActions.isEmpty()) {
+            val removeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
+                modifyConfig.methodAction!!.toNewClass == null
+            }.map { it.methodAction!! }
+
+            if (removeInvokeMethodActions.isEmpty()) {
+                return visitMethod
+            }
+
+            println("need remove $changeInvokeMethodActions".green)
+            return RemoveInvokeMethodVisitor(
+                fullMethodName,
+                removeInvokeMethodActions,
+                apiVersion,
+                visitMethod
+            )
+        }
+
+        println("need change $changeInvokeMethodActions".green)
+
+        val changeInvokeOwnerMethodVisitor = ChangeInvokeOwnerMethodVisitor(
+            fullMethodName,
+            changeInvokeMethodActions,
+            apiVersion,
+            visitMethod
+        )
+
+        val removeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
+            modifyConfig.methodAction!!.toNewClass == null
+        }.map { it.methodAction!! }
+
+        if (removeInvokeMethodActions.isEmpty()) {
+            return changeInvokeOwnerMethodVisitor
+        }
+
+
+        println("need remove $removeInvokeMethodActions".red)
+        return RemoveInvokeMethodVisitor(
+            fullMethodName,
+            removeInvokeMethodActions,
+            apiVersion,
+            changeInvokeOwnerMethodVisitor
+        )
     }
 }

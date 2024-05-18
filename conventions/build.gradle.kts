@@ -37,7 +37,7 @@ dependencies {
 
     compileOnly(kotlin(module = "gradle-plugin", version = libs.versions.kotlin.get()))
     implementation("com.google.protobuf:protobuf-gradle-plugin:${libs.versions.protobuf.plugin.get()}")
-    compileOnly(gradleKotlinDsl())
+//    compileOnly(gradleKotlinDsl())
     // help->dependencies只会输出implementation的库的依赖关系
 }
 

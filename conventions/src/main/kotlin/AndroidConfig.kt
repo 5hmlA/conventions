@@ -20,6 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 
 open class AndroidConfig : Plugin<Project> {
 
+
     /**
      * ```kotlin
      *     override fun pluginConfigs(): PluginManager.() -> Unit = {

@@ -27,8 +27,8 @@ import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import knife.KnifeExtension
-import knife.TransformWorker
-import knife.VariantAction
+import knife.Knife
+import knife.VariantKnifeAction
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -50,13 +50,7 @@ internal val Project.vlibs
 internal val Project.vWings
     get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
 
-fun Project.knife(config: KnifeExtension.() -> Unit) = extensions.getByType<KnifeExtension>().config()
-
-fun Project.registerAsmTransform(worker: TransformWorker.() -> (ClassData) -> Boolean) =
-    extensions.getByType<KnifeExtension>().extensions.getByType<VariantAction>().registerAsmTransform(worker)
-
-fun Project.onArtifactBuilt(listen: (String) -> Unit) =
-    extensions.getByType<KnifeExtension>().extensions.getByType<VariantAction>().onArtifactBuilt(listen)
+fun Project.knife(config: Knife.() -> Unit) = extensions.getByType<Knife>().config()
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
 typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *, *>

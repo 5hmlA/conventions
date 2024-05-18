@@ -1,4 +1,3 @@
-
 plugins {
     //之所以要[apply true]是因为没在顶层build.gradle中apply所以这里需要
     alias(libs.plugins.android.application) apply true
@@ -11,14 +10,23 @@ plugins {
 }
 
 knife {
-    onVariants {
-        if (it.name.contains("release")) {
-            onArtifactBuilt {
-                copy {
-                    //copy apk to rootDir
-                    from(it)
-                    //into a directory
-                    into(rootDir.absolutePath)
+    onVariants { variants ->
+        if (variants.name.contains("debug")) {
+            knifeActions {
+                asmTransform {
+                    configs(
+                        "com.osp.app.MainActivity#testfunss#?=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testfunReturnFloat#*",
+                        "com.osp.app.MainActivity#onCreate#*=>*#testfun#*",
+                    )
+                }
+                onArtifactBuilt {
+                    copy {
+                        //copy apk to rootDir
+                        from(it)
+                        //into a directory
+                        into(rootDir.absolutePath)
+                    }
                 }
             }
         }
@@ -31,15 +39,23 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     buildFeatures {
         viewBinding = true
     }
 
+    androidComponents {
+        onVariants { variants ->
+            println("--androidComponents ->------- build config $variants")
+        }
+    }
 }
 
-dependencies {
-    implementation(project(":lib-test"))
-}
+//dependencies {
+//    implementation(project(":lib-test"))
+//}

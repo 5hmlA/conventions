@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.android.library) apply true
     alias(libs.plugins.kotlin.android) apply false
@@ -14,16 +13,17 @@ plugins {
 knife {
     println("--knife ->------- build config")
     onVariants {
-        if (it.name.contains("debug")) {
-            onArtifactBuilt {
-                copy {
-                    //copy apk to rootDir
-                    from(it)
-                    //into a directory
-                    into(rootDir.absolutePath)
-                }
-            }
-        }
+        println("--knife ->------- build config $it")
+//        if (it.name.contains("debug")) {
+//            onArtifactBuilt {
+//                copy {
+//                    //copy apk to rootDir
+//                    from(it)
+//                    //into a directory
+//                    into(rootDir.absolutePath)
+//                }
+//            }
+//        }
     }
 }
 
@@ -33,7 +33,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     buildFeatures {
