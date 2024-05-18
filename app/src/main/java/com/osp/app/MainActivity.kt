@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     fun testChange(num: Int): String {
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
+        testRemove(99)
         return "123"
     }
 
