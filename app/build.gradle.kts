@@ -15,8 +15,9 @@ knife {
             knifeActions {
                 asmTransform {
                     configs(
-                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*",
-                        "com.osp.app.MainActivity#testChange#?=>?#testRemove#*->hello/change",
+                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testChange#?=>?#testRemove#*",
+                        "com.osp.app.RemoveAllMethod#*#*",
                         "com.osp.app.MainActivity#testEmpty#*",
                         "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",
                     )

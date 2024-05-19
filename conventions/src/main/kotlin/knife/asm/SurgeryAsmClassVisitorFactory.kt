@@ -1,17 +1,18 @@
 package knife.asm
 
-import com.android.build.api.instrumentation.*
-import org.gradle.api.provider.ListProperty
+import com.android.build.api.instrumentation.AsmClassVisitorFactory
+import com.android.build.api.instrumentation.ClassContext
+import com.android.build.api.instrumentation.ClassData
+import com.android.build.api.instrumentation.InstrumentationParameters
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import wing.green
-import wing.purple
 import wing.red
-import wing.toStr
 
 abstract class SurgeryInstrumentationParameters : InstrumentationParameters {
 
@@ -26,11 +27,12 @@ abstract class SurgeryInstrumentationParameters : InstrumentationParameters {
 
     @get:Input
     @get:Optional
-    abstract val methodConfigs: MapProperty<String, List<ModifyConfig>>//一个方法名->对应多个操作
+    //Map<类,Map<方法，修改> //这些类的哪些方法要做什么修改
+    abstract val methodConfigs: MapProperty<String, Map<String, List<ModifyConfig>>>
 
     @get:Input
     @get:Optional
-    abstract val targetClasses: ListProperty<String>
+    abstract val targetClasses: SetProperty<String>
 }
 
 //必须是抽象类，会自动实现部分方法
@@ -41,13 +43,21 @@ abstract class SurgeryAsmClassVisitorFactory :
 //    override val parameters: Property<SurgeryInstrumentationParameters>
 //        get() =
 
+    //ThreadLocal不能序列化，会报错
+//    @Internal
+//    val findModifyMethods: ThreadLocal<Map<String, List<ModifyConfig>>> = ThreadLocal<Map<String, List<ModifyConfig>>>()
+
+    /**
+     * isInstrumentable 返回true之后才执行，且在同线程
+     */
     override fun createClassVisitor(
         classContext: ClassContext,
         nextClassVisitor: ClassVisitor
     ): ClassVisitor {
-        println("xxxxxx ${classContext.currentClassData.className}")
+        //classContext.currentClassData.className 是正常的完整类名 .分割
+        //inernalClass 是asm的类名 /分割
         return KnifeClassMethodVisitor(
-            parameters.get().methodConfigs.get(),
+            parameters.get().methodConfigs.get()[classContext.currentClassData.className]!!,
             instrumentationContext.apiVersion.get(),
             nextClassVisitor
         )
@@ -59,6 +69,11 @@ abstract class SurgeryAsmClassVisitorFactory :
 }
 
 //https://www.kingkk.com/2020/08/ASM%E5%8E%86%E9%99%A9%E8%AE%B0/
+/**
+ * @param methodConfigs 当前类要处理的所有方法
+ *
+ * 对某个类执行ASM处理
+ */
 class KnifeClassMethodVisitor(
     private val methodConfigs: Map<String, List<ModifyConfig>>,
     private val apiVersion: Int,
@@ -115,13 +130,15 @@ class KnifeClassMethodVisitor(
     ): MethodVisitor? {
         val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
 
+        if (methodConfigs["*"] != null || methodConfigs["?"] != null) {
+            //匹配类的所有方法那么就是把这个类的所有方法置空 这种忽略签名，不管了
+            println("KnifeClassMethodVisitor >> empty all fun in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+            return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
+        }
+
         val modifyConfigs = methodConfigs[name] ?: return visitMethod
         val matchedModifyConfigs = modifyConfigs.filter { modifyConfig ->
-            if (modifyConfig.targetMethod.descriptor == "*" || modifyConfig.targetMethod.descriptor == "?") {
-                modifyConfig.targetMethod.internalClass == internalClass
-            } else {
-                modifyConfig.targetMethod.descriptor == descriptor && modifyConfig.targetMethod.internalClass == internalClass
-            }
+            modifyConfig.targetMethod.descriptor == "*" || modifyConfig.targetMethod.descriptor == "?" || modifyConfig.targetMethod.descriptor == descriptor
         }
 
         if (matchedModifyConfigs.isEmpty()) {
@@ -129,7 +146,7 @@ class KnifeClassMethodVisitor(
         }
 
         val fullMethodName = "$internalClass#$name"
-        println("KnifeClassMethodVisitor >> [$fullMethodName], name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".purple)
+        println("KnifeClassMethodVisitor >> need modify [$fullMethodName], name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
         //方法置空处理
         val emptyMethodConfig = matchedModifyConfigs.find {
             it.methodAction == null
@@ -140,12 +157,17 @@ class KnifeClassMethodVisitor(
             return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
         }
 
+        //不是置空这个方法
+        //接下来看这个方法内部的调用，是要移除某行调用还是修改某行调用
+
         val changeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
+            //新类toNewClass不为空，说明这个方法内部要修改调用某行方法，执行者替换为某个类的同签名的静态方法
             modifyConfig.methodAction!!.toNewClass != null
         }.map { it.methodAction!! }
 
         if (changeInvokeMethodActions.isEmpty()) {
             val removeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
+                //toNewClass为空说明要这个方法内部要移除某调用
                 modifyConfig.methodAction!!.toNewClass == null
             }.map { it.methodAction!! }
 
@@ -153,7 +175,8 @@ class KnifeClassMethodVisitor(
                 return visitMethod
             }
 
-            println("need remove $changeInvokeMethodActions".green)
+            //这个方法内部的处理：只要移除某行调用
+            println("need remove $removeInvokeMethodActions".green)
             return RemoveInvokeMethodVisitor(
                 fullMethodName,
                 removeInvokeMethodActions,
@@ -176,11 +199,12 @@ class KnifeClassMethodVisitor(
         }.map { it.methodAction!! }
 
         if (removeInvokeMethodActions.isEmpty()) {
+            //这个方法内部的处理：只要修改调用方不用移除某行调用
             return changeInvokeOwnerMethodVisitor
         }
 
-
-        println("need remove $removeInvokeMethodActions".red)
+        //这个方法内部的处理：既要修改调用方也要移除某行调用
+        println("need remove $removeInvokeMethodActions".green)
         return RemoveInvokeMethodVisitor(
             fullMethodName,
             removeInvokeMethodActions,

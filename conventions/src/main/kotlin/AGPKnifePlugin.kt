@@ -1,7 +1,10 @@
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.instrumentation.InstrumentationScope
 import com.android.build.api.variant.Variant
-import knife.*
+import knife.KnifeImpl
+import knife.TaskListenApk
+import knife.TransformConfigImpl
+import knife.VariantKnifeActionImpl
 import knife.asm.SurgeryAsmClassVisitorFactory
 import knife.asm.toModifyConfig
 import org.gradle.api.Project
@@ -72,7 +75,17 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                 params.buildType.set(variant.buildType)
                 params.flavorName.set(variant.flavorName)
                 params.variantName.set(variant.name)
-                params.methodConfigs.set(modifyConfigs.groupBy { it.targetMethod.methodName })
+                val mapValues = modifyConfigs.groupBy { it.targetMethod.fullClass }.mapValues {
+                    it.value.groupBy { it.targetMethod.methodName }
+                }
+                mapValues.forEach { (key, value) ->
+                    project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
+                    value.forEach { t, u ->
+                        project.log("knife -> tryAsmTransform:${variant.name}       $t > $u".red)
+                    }
+                    project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
+                }
+                params.methodConfigs.set(mapValues)
                 val modifyClasses = modifyConfigs.map { it.targetMethod.fullClass }.distinctBy { it }
                 params.targetClasses.set(modifyClasses)
             }

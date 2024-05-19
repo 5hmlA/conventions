@@ -5,7 +5,6 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import wing.purple
-import wing.red
 import java.io.Serializable
 
 data class MethodData(
@@ -21,6 +20,22 @@ data class MethodAction(
 ) : Serializable
 
 private fun String.isIgnore(): Boolean = this == "*" || this == "?"
+
+private fun String.compareContains(other: String): Boolean = this == other || this.contains(other)
+
+private fun List<MethodAction>.find(owner: String, name: String?, descriptor: String?): MethodAction? = find {
+    val ignoreDescriptor = it.methodData.descriptor.isIgnore()
+    val ignoreInternalClass = it.methodData.internalClass.isIgnore()
+    if (ignoreDescriptor && ignoreInternalClass) {
+        it.methodData.methodName == name
+    } else if (ignoreDescriptor) {
+        it.methodData.methodName == name && owner.compareContains(it.methodData.internalClass)
+    } else if (ignoreInternalClass) {
+        it.methodData.methodName == name && it.methodData.descriptor == descriptor
+    } else {
+        it.methodData.methodName == name && it.methodData.descriptor == descriptor && owner.compareContains(it.methodData.internalClass)
+    }
+}
 
 private fun String.toMethodData(): MethodData {
     val (clz, method, desc) = this.split("#")
@@ -50,7 +65,7 @@ internal fun String.toModifyConfig(): ModifyConfig {
     }
     // PrintStream#println#(I)V->dest/clazz
     val (oldInnerMethodStr, toClz) = innerMethodStr.split("->")
-    return ModifyConfig(targetMethod, MethodAction(oldInnerMethodStr.toMethodData(), toClz.replace(".","/")))
+    return ModifyConfig(targetMethod, MethodAction(oldInnerMethodStr.toMethodData(), toClz.replace(".", "/")))
 }
 
 
@@ -141,24 +156,12 @@ internal class RemoveInvokeMethodVisitor(
 
     override fun visitMethodInsn(
         opcode: Int,
-        owner: String?,
+        owner: String,
         name: String?,
         descriptor: String?,
         isInterface: Boolean
     ) {
-        val methodAction = methodActions.find {
-            val ignoreDescriptor = it.methodData.descriptor.isIgnore()
-            val ignoreInternalClass = it.methodData.internalClass.isIgnore()
-            if (ignoreDescriptor && ignoreInternalClass) {
-                it.methodData.methodName == name
-            } else if (ignoreDescriptor) {
-                it.methodData.methodName == name && it.methodData.internalClass == owner
-            } else if (ignoreInternalClass) {
-                it.methodData.methodName == name && it.methodData.descriptor == descriptor
-            } else {
-                it.methodData.methodName == name && it.methodData.descriptor == descriptor && it.methodData.internalClass == owner
-            }
-        }
+        val methodAction = methodActions.find(owner, name, descriptor)
         if (methodAction == null) {
             //没匹配到就不需要移除
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
@@ -204,21 +207,9 @@ internal class ChangeInvokeOwnerMethodVisitor(
         descriptor: String?,
         isInterface: Boolean
     ) {
-        val methodAction = methodActions.find {
-            val ignoreDescriptor = it.methodData.descriptor.isIgnore()
-            val ignoreInternalClass = it.methodData.internalClass.isIgnore()
-            if (ignoreDescriptor && ignoreInternalClass) {
-                it.methodData.methodName == name
-            } else if (ignoreDescriptor) {
-                it.methodData.methodName == name && owner.contains(it.methodData.internalClass)
-            } else if (ignoreInternalClass) {
-                it.methodData.methodName == name && it.methodData.descriptor == descriptor
-            } else {
-                it.methodData.methodName == name && it.methodData.descriptor == descriptor && owner.contains(it.methodData.internalClass)
-            }
-        }
+        val methodAction = methodActions.find(owner, name, descriptor)
         if (methodAction == null) {
-            //没匹配到就不需要移除
+            //没匹配到就不需要处理
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
         } else {
             println("ChangeInvokeOwnerMethodVisitor >> owner = [${owner}], name = [${name}], descriptor = [${descriptor}], to [${methodAction.toNewClass}], in [$classMethod]".purple)
