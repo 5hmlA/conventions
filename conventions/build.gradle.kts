@@ -46,8 +46,8 @@ dependencies {
 "======== superclass= ${this.javaClass.superclass}".print()
 "======== rootProject= $rootProject".print()
 
-//group = "osp.sparkj.plugin"
-group = "io.github.5hmlA"
+group = "osp.sparkj.plugin"
+//group = "io.github.5hmlA"
 version = "1.0"
 
 publishing {
@@ -57,7 +57,7 @@ publishing {
             url = uri("https://maven.pkg.github.com/5hmlA/sparkj")
             credentials {
                 username = System.getenv("GITHUB_USER")
-                password = "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"
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
         maven {
