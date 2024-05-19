@@ -119,29 +119,30 @@ fun RepositoryHandler.chinaRepos() {
     maven {
         name = "tencent"
         isAllowInsecureProtocol = true
-        url = URI.create("https://mirrors.tencent.com/nexus/repository/maven-public/")
+        setUrl("https://mirrors.tencent.com/nexus/repository/maven-public/")
     }
-    maven {
-        name = "ali"
-        isAllowInsecureProtocol = true
-        url = URI.create("https://maven.aliyun.com/repository/public")
-    }
+//    maven {
+//        name = "ali"
+//        isAllowInsecureProtocol = true
+//        setUrl("https://maven.aliyun.com/repository/public")
+//    }
     google()
     mavenCentral()
     maven {
         name = "5hmlA"
         isAllowInsecureProtocol = true
-        url = URI.create("https://maven.pkg.github.com/5hmlA/sparkj")
+        setUrl("https://maven.pkg.github.com/5hmlA/sparkj")
         credentials {
             // https://www.sojson.com/ascii.html
             username = "5hmlA"
-            password = "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"
+            password = "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"
         }
     }
     gradlePluginPortal()
     maven {
         name = "tencent.plugins"
         isAllowInsecureProtocol = true
-        url = URI.create("https://mirrors.tencent.com/nexus/repository/gradle-plugins/")
+        setUrl("https://maven.pkg.github.com/5hmlA/sparkj")
+        setUrl("https://mirrors.tencent.com/nexus/repository/gradle-plugins/")
     }
 }

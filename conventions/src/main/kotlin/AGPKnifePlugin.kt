@@ -16,7 +16,7 @@ import wing.toStr
 //https://developer.android.google.cn/build/extend-agp?hl=zh-cn
 class AGPKnifePlugin : AbsAndroidConfig() {
     override fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit =
-        { project, versionCatalog ->
+        { project, _ ->
             val knifeImpl = KnifeImpl()
             val knifeExtension = knifeImpl.createExtension(project)
 
