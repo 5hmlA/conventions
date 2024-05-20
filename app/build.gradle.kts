@@ -12,11 +12,11 @@ plugins {
 knife {
     onVariants { variants ->
         if (variants.name.contains("debug")) {
-            knifeActions {
+            utility {
                 asmTransform {
                     configs(
-                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
-                        "com.osp.app.MainActivity#testChange#?=>?#testRemove#*",
+                        "com.osp.app.MainActivity#testChange#*=>java/io/PrintStream#println#*->hello/change",
+                        "com.osp.app.MainActivity#testChange#*=>*#testRemove#*",
                         "com.osp.app.RemoveAllMethod#*#*",
                         "com.osp.app.MainActivity#testEmpty#*",
                         "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",

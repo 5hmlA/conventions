@@ -19,7 +19,7 @@ data class MethodAction(
     val toNewClass: String? = null
 ) : Serializable
 
-private fun String.isIgnore(): Boolean = this == "*" || this == "?"
+private fun String.isIgnore(): Boolean = this == "*"
 
 private fun String.compareContains(other: String): Boolean = this == other || this.contains(other)
 

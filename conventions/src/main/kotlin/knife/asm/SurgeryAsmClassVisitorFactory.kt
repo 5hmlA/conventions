@@ -130,10 +130,21 @@ class KnifeClassMethodVisitor(
     ): MethodVisitor? {
         val visitMethod = super.visitMethod(access, name, descriptor, signature, exceptions)
 
-        if (methodConfigs["*"] != null || methodConfigs["?"] != null) {
-            //匹配类的所有方法那么就是把这个类的所有方法置空 这种忽略签名，不管了
-            println("KnifeClassMethodVisitor >> empty all fun in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
-            return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
+        val wildcard = methodConfigs["*"]
+        if (wildcard != null) {
+            //这里表示匹配类的任意方法
+            val modifyConfig = wildcard.first()
+            //只取第一个方法的匹配方案，看descriptor
+            val targetDescriptor = modifyConfig.targetMethod.descriptor
+            if (targetDescriptor == "*") {
+                //目标方法的descriptor规则为通配符，则忽略descriptor匹配，也就是说这个类的所有方法都匹配，全置空
+                println("KnifeClassMethodVisitor >> empty all fun in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+                return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
+            } else if (targetDescriptor == descriptor) {
+                //表示匹配这个类下所有签名为descriptor的方法 (参数+返回值)
+                println("KnifeClassMethodVisitor >> empty all fun[$descriptor] in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+                return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
+            }
         }
 
         val modifyConfigs = methodConfigs[name] ?: return visitMethod
@@ -159,7 +170,6 @@ class KnifeClassMethodVisitor(
 
         //不是置空这个方法
         //接下来看这个方法内部的调用，是要移除某行调用还是修改某行调用
-
         val changeInvokeMethodActions = modifyConfigs.filter { modifyConfig ->
             //新类toNewClass不为空，说明这个方法内部要修改调用某行方法，执行者替换为某个类的同签名的静态方法
             modifyConfig.methodAction!!.toNewClass != null

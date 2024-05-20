@@ -1,8 +1,3 @@
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -27,3 +22,5 @@ rootProject.name = "conventions"
 
 
 //include(":conventions")
+
+//https://developer.android.google.cn/build/publish-library/upload-library?hl=zh-cn#kts

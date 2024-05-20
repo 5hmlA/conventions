@@ -86,7 +86,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                     project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
                 }
                 params.methodConfigs.set(mapValues)
-                val modifyClasses = modifyConfigs.map { it.targetMethod.fullClass }.distinctBy { it }
+                val modifyClasses = modifyConfigs.map { it.targetMethod.fullClass }.toSet()
                 params.targetClasses.set(modifyClasses)
             }
         }

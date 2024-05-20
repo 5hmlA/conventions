@@ -6,7 +6,7 @@ cubic = "2023.04.11"
 viewDsl = "2023.12.08"
 adapter = "2023.10.13"
 spark = "2023.12.08"
-conventions = "1.0"
+conventions = "1.1"
 
 [libraries]
 sparkj-spark = { module = "osp.sparkj.ui:spark", version.ref = "spark" }
@@ -17,43 +17,6 @@ sparkj-adapter = { module = "osp.sparkj.ui:adapter", version.ref = "adapter" }
 
 
 [bundles]
-android-view = [
-    "androidx-core-splashscreen",
-    "androidx-constraintlayout",
-    "androidx-swiperefreshlayout",
-    "androidx-recyclerview",
-    "androidx-navigation-ui-ktx",
-    "androidx-palette-ktx",
-    "androidx-webkit",
-    "google-material",
-]
-
-# https://androidx.tech/artifacts-index
-android-project = [
-    "androidx-activity-ktx",
-    "androidx-appcompat",
-    "androidx-window",
-    "androidx-window-ext",
-    "androidx-annotation",
-    "androidx-work-runtime-ktx",
-    "androidx-collection-ktx",
-    "androidx-room-ktx",
-    "androidx-core-ktx",
-    "androidx-datastore-preferences",
-    "androidx-dynamicanimation-ktx",
-    "androidx-bluetooth",
-    "lifecycle-process",
-    #    https://developer.android.google.cn/jetpack/androidx/releases/lifecycle?hl=zh-cn
-    "lifecycle-livedata-ktx",
-    "lifecycle-viewmodel-savedstate",
-    "lifecycle-viewmodel-ktx",
-    "kotlinx-atomicfu",
-    "kotlinx-coroutines-android",
-    "kotlinx-coroutines-core",
-    "kotlinx-serialization-json",
-    "kotlinx-datetime",
-    "kotlinx-io",
-]
 sparkj = ["sparkj-view-dsl", "sparkj-cubic", "sparkj-cartoon"]
 
 [plugins]
@@ -61,3 +24,12 @@ compose = { id = "io.github.5hmlA.android.compose", version.ref = "conventions" 
 android = { id = "io.github.5hmlA.android", version.ref = "conventions" }
 protobuf = { id = "io.github.5hmlA.protobuf", version.ref = "conventions" }
 knife = { id = "io.github.5hmlA.knife", version.ref = "conventions" }
+
+#需要手动配置 才可以使用
+#dependencyResolutionManagement {
+#    versionCatalogs {
+#        create("wings") {
+#            from(files("gradle/wings.versions.toml"))
+#        }
+#    }
+#}

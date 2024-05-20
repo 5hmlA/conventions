@@ -4,7 +4,11 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 import org.gradle.api.plugins.PluginManager
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.kotlin.dsl.buildscript
+import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.repositories
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import wing.AndroidCommonExtension
@@ -123,7 +127,19 @@ open class AndroidConfig : Plugin<Project> {
             //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {
                 //<editor-fold desc="android project default dependencies">
-                catalogWings?.findBundle("android-project")?.getOrNull()?.let { androidProject ->
+                catalog.findLibrary("koin-bom").ifPresent { koinBom ->
+                    log("implementation(koin)")
+                    add("implementation", platform(koinBom))
+                    add("implementation", catalog.findBundle("koin").get())
+                }
+
+                catalog.findLibrary("okhttp-bom").ifPresent { okhttpBom ->
+                    log("implementation(okhttp-bom)")
+                    add("implementation", platform(okhttpBom))
+                    add("implementation", catalog.findBundle("okhttp").get())
+                }
+
+                catalog.findBundle("android-project").getOrNull()?.let { androidProject ->
                     log("implementation(android-project)")
                     add("implementation", androidProject)
                 } ?: run {
@@ -137,26 +153,10 @@ open class AndroidConfig : Plugin<Project> {
                     add("implementation", catalog.findLibrary("androidx-core-ktx").get())
                     add("implementation", catalog.findLibrary("androidx-constraintlayout").get())
                 }
-                catalogWings?.findBundle("sparkj")?.ifPresent { sparkj ->
-                    log("implementation(sparkj)")
-                    add("implementation", sparkj)
-                }
-                catalogWings?.findBundle("android-view")?.ifPresent { sparkj ->
-                    log("implementation(android-view)")
-                    add("implementation", sparkj)
-                }
-
-                catalog.findBundle("koin-bom").ifPresent { koinBom ->
-                    log("implementation(koin-bom)")
-                    add("implementation", platform(koinBom))
-                    add("implementation", catalog.findBundle("koin").get())
-                }
-
-                catalog.findBundle("okhttp-bom").ifPresent { okhttpBom ->
-                    log("implementation(okhttp-bom)")
-                    add("implementation", platform(okhttpBom))
-                    add("implementation", catalog.findBundle("okhttp").get())
-                }
+//                catalog.findBundle("android-view").ifPresent { views ->
+//                    log("implementation(android-view)")
+//                    add("implementation", views)
+//                }
                 catalog.findBundle("ktor").ifPresent { ktor ->
                     log("implementation(ktor)")
                     add("implementation", ktor)
@@ -167,6 +167,10 @@ open class AndroidConfig : Plugin<Project> {
                 catalog.findBundle("androidx-benchmark").ifPresent { androidxBenchmark ->
 //                    包括 androidx-test-ext-junit , androidx-test-espresso-core
                     add("androidTestImplementation", androidxBenchmark)
+                }
+                catalogWings?.findBundle("sparkj")?.ifPresent { sparkj ->
+                    log("implementation(sparkj)")
+                    add("implementation", sparkj)
                 }
                 //</editor-fold>
                 dependenciesConfig()(catalog)

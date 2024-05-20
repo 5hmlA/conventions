@@ -10,6 +10,10 @@
 Some plugins that simplify the configuration of gradle projects can improve the efficiency of gradle project configuration. Especially in multi-module projects, they can unify the consistency of each module and support the configuration of specific dependent versions. Modifications in one place will take effect globally.
 
 # Getting Start
+
+![](https://img.shields.io/badge/java-18-lightgreen.svg)
+![](https://img.shields.io/badge/kotlin-1.9.24-lightgreen.svg)
+
 ## First you have to enable *version catalog*
 - You can get ````libs.versions.toml```` file from [android/nowinandroid](https://github.com/android/nowinandroid) (of course you can also get it from this project) , then Configure it in the gradle directory of your project
 - You can customize the version number in ````libs.versions.toml```` . Note that you can only modify the version number.
@@ -107,10 +111,10 @@ Using the knife plug-in is simplified as follows, if you use agp you must comple
 knife {
     onVariants { variants ->
         if (variants.name.contains("debug")) {
-            knifeActions {
+            utility {
                 asmTransform {
                     // Configure ASM processing
-                    // Format: [FullyQualifiedClassName#MethodName#MethodSignature|*|?]=>[FullyQualifiedClassName#MethodName#MethodSignature|*|?]->[FullyQualifiedClassName]
+                    // Format: [full.class.name#MethodName|*#descriptor|*]=>[full.class.name|className|*#MethodName|*#descriptor|*]->[full.class.name]
                     // 1. Empty the method implementation:
                     // "com.osp.app.MainActivity#testEmpty#*"
                     // Empties the implementation of the testEmpty method in the MainActivity class.
@@ -121,8 +125,13 @@ knife {
                     // "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change"
                     // Modifies the System.out.println() call inside the testChange method of the MainActivity class to a static call to hello.change.println().
                     configs(
-                        "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change",
+                        //change invoke owner [PrintStream.println()->hello.change.println()] in MainActivity.testChange
+                        "com.osp.app.MainActivity#testChange#*=>java/io/PrintStream#println#*->hello/change",
+                        //empty all fun name testEmpty in com.osp.app.MainActivity
                         "com.osp.app.MainActivity#testEmpty#*",
+                        //empty all method in com.osp.app.RemoveAllMethod
+                        "com.osp.app.RemoveAllMethod#*#*",
+                        //remove all any owner invoke testRemove in fun MainActivity.onCreate
                         "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*",
                     )
                 }

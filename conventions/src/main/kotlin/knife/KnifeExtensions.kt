@@ -80,7 +80,7 @@ class VariantKnifeActionImpl : VariantKnifeAction {
     //怀孕,生成子extension
     fun createExtension(knifeExtension: KnifeExtension): VariantKnifeActionExtension {
         return knifeExtension.extensions.create(
-            "knifeActions",
+            "utility",
             VariantKnifeActionExtension::class.java,
             this
         )

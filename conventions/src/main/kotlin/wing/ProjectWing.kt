@@ -22,19 +22,14 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.VariantDimension
-import com.android.build.api.instrumentation.ClassData
 import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import knife.KnifeExtension
-import knife.Knife
-import knife.VariantKnifeAction
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.getByType
-import java.net.URI
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -50,7 +45,7 @@ internal val Project.vlibs
 internal val Project.vWings
     get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
 
-fun Project.knife(config: Knife.() -> Unit) = extensions.getByType<Knife>().config()
+//fun Project.knife(config: Knife.() -> Unit) = extensions.getByType<Knife>().config()
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
 typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *, *>
@@ -92,6 +87,10 @@ fun VariantDimension.defineInt(name: String, value: Int) {
     buildConfigField("int", name, value.toString())
 }
 
+fun VariantDimension.defineFloat(name: String, value: Int) {
+    buildConfigField("float", name, value.toString())
+}
+
 fun VariantDimension.defineResStr(name: String, value: String) {
     //使用方式 getResources().getString(R.string.name) 值为value
     resValue("string", name, value)
@@ -121,11 +120,6 @@ fun RepositoryHandler.chinaRepos() {
         isAllowInsecureProtocol = true
         setUrl("https://mirrors.tencent.com/nexus/repository/maven-public/")
     }
-//    maven {
-//        name = "ali"
-//        isAllowInsecureProtocol = true
-//        setUrl("https://maven.aliyun.com/repository/public")
-//    }
     google()
     mavenCentral()
     maven {
@@ -137,12 +131,5 @@ fun RepositoryHandler.chinaRepos() {
             username = "5hmlA"
             password = "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"
         }
-    }
-    gradlePluginPortal()
-    maven {
-        name = "tencent.plugins"
-        isAllowInsecureProtocol = true
-        setUrl("https://maven.pkg.github.com/5hmlA/sparkj")
-        setUrl("https://mirrors.tencent.com/nexus/repository/gradle-plugins/")
     }
 }
