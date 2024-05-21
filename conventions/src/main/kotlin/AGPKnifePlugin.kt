@@ -81,7 +81,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                 mapValues.forEach { (key, value) ->
                     project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
                     value.forEach { t, u ->
-                        project.log("knife -> tryAsmTransform:${variant.name}       $t > $u".red)
+                        project.log("knife -> tryAsmTransform:${variant.name}       $t > ${u.map { it.methodAction ?: "EmptyMethod" }}".red)
                     }
                     project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
                 }

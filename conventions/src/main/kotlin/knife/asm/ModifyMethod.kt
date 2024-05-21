@@ -17,7 +17,15 @@ data class MethodData(
 data class MethodAction(
     val methodData: MethodData,
     val toNewClass: String? = null
-) : Serializable
+) : Serializable {
+    override fun toString(): String {
+        if (toNewClass == null) {
+            return "RemoveInvoke($methodData)"
+        } else {
+            return "ChangeInvoke($methodData to $toNewClass)"
+        }
+    }
+}
 
 private fun String.isIgnore(): Boolean = this == "*"
 
