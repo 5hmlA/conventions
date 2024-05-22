@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.org.bouncycastle.asn1.x500.style.RFC4519Style.name
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
@@ -20,9 +18,18 @@ dependencyResolutionManagement {
 
 rootProject.name = "gradle-conventions"
 
-val allGradleProject = rootProject.projectDir.toPath().listDirectoryEntries().filter {
-    it.isDirectory() && !it.name.startsWith(".") && it.name != "gradle"
+fun java.nio.file.Path.isGradleProject(): Boolean = if (!isDirectory()) false else listDirectoryEntries().any {
+    it.toString().endsWith("build.gradle.kts")
 }
+
+rootProject.projectDir.toPath().listDirectoryEntries().forEach {
+    println("${it.name} >> ${it.isGradleProject()}")
+}
+
+val allGradleProject = rootProject.projectDir.toPath().listDirectoryEntries().filter {
+    it.isGradleProject()
+}
+
 allGradleProject.forEachIndexed { index, path ->
     println(">>> ${path.name} --> $index")
     if (path.name == "conventions") {

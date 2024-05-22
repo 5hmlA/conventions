@@ -122,7 +122,7 @@ knife {
                     // "com.osp.app.MainActivity#onCreate#*=>*#testRemove#*"
                     // Removes the testRemove() call inside the onCreate method of the MainActivity class.
                     // 3. Modify the method call:
-                    // "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello/change"
+                    // "com.osp.app.MainActivity#testChange#?=>java/io/PrintStream#println#*->hello.change"
                     // Modifies the System.out.println() call inside the testChange method of the MainActivity class to a static call to hello.change.println().
                     configs(
                         //change invoke owner [PrintStream.println()->hello.change.println()] in MainActivity.testChange

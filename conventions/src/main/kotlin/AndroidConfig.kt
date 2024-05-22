@@ -20,7 +20,6 @@ import wing.red
 import wing.vWings
 import wing.vlibs
 import java.io.File
-import kotlin.jvm.optionals.getOrNull
 
 open class AndroidConfig : Plugin<Project> {
 
@@ -139,10 +138,10 @@ open class AndroidConfig : Plugin<Project> {
                     add("implementation", catalog.findBundle("okhttp").get())
                 }
 
-                catalog.findBundle("android-project").getOrNull()?.let { androidProject ->
+                catalog.findBundle("android-project").ifPresentOrElse({ androidProject ->
                     log("implementation(android-project)")
                     add("implementation", androidProject)
-                } ?: run {
+                }) {
                     log("implementation(androidx...appcompat)")
                     add("implementation", catalog.findLibrary("androidx-navigation-ui-ktx").get())
                     add("implementation", catalog.findLibrary("androidx-navigation-fragment-ktx").get())
@@ -153,6 +152,7 @@ open class AndroidConfig : Plugin<Project> {
                     add("implementation", catalog.findLibrary("androidx-core-ktx").get())
                     add("implementation", catalog.findLibrary("androidx-constraintlayout").get())
                 }
+
 //                catalog.findBundle("android-view").ifPresent { views ->
 //                    log("implementation(android-view)")
 //                    add("implementation", views)
