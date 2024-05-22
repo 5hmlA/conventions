@@ -61,7 +61,7 @@ android {
 
 dependencies {
     //Some necessary dependencies for android projects
-    ...
+    //...
     //necessary dependencies for compose
     val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
