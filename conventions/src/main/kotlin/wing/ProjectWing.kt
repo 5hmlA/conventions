@@ -30,6 +30,8 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.kotlin.dsl.getByType
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -37,17 +39,14 @@ fun Project.log(msg: String) {
     //🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡  🔔
 
     //    println("🎗️ $name >>> $msg".yellow)
-    println("📣 $name >>> $msg".yellow)
+    println("📣 $name -> $msg".yellow)
 }
-
 
 internal val Project.vlibs
     get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 internal val Project.vWings
     get(): VersionCatalog? = extensions.getByType<VersionCatalogsExtension>().find("wings").getOrNull()
-
-//fun Project.knife(config: Knife.() -> Unit) = extensions.getByType<Knife>().config()
 
 //要兼容 application和library 这里的泛型必须 用*全匹配
 typealias AndroidCommonExtension = CommonExtension<*, *, *, *, *, *>
@@ -75,7 +74,6 @@ val Project.isAndroidLibrary
 
 val Project.isAndroidLib
     get(): Boolean = androidExtensionComponent is LibraryAndroidComponentsExtension
-
 
 fun VariantDimension.defineStr(name: String, value: String) {
     buildConfigField("String", name, "\"$value\"")
@@ -134,4 +132,8 @@ fun RepositoryHandler.chinaRepos() {
             password = "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"
         }
     }
+}
+
+fun java.nio.file.Path.isGradleProject(): Boolean = if (!isDirectory()) false else listDirectoryEntries().any {
+    it.toString() == "build.gradle.kts"
 }

@@ -6,6 +6,7 @@ android-minSdk = "26"
 android-targetSdk = "34"
 kotlin = "1.9.24"
 ksp = "1.9.24-1.0.20"
+#ksp = "2.0.0-1.0.21"
 android-gradle-plugin = "8.3.2"
 accompanistPager = "0.30.1"
 accompanistSwiperefresh = "0.30.1"
@@ -303,7 +304,6 @@ android-project = [
     "androidx-annotation",
     "androidx-work-runtime-ktx",
     "androidx-collection-ktx",
-    "androidx-room-ktx",
     "androidx-core-ktx",
     "androidx-datastore-preferences",
     "androidx-dynamicanimation-ktx",

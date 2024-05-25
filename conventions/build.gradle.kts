@@ -29,7 +29,9 @@ dependencies {
 //    val agp = sysprop("dep.agp.ver", "8.2.0")
     compileOnly("com.android.tools.build:gradle-api:${libs.versions.android.gradle.plugin.get()}")
     compileOnly("com.android.tools.build:gradle:${libs.versions.android.gradle.plugin.get()}")
-//    compileOnly("com.gradle.publish:plugin-publish-plugin:1.2.1")
+    //gradle plugin id 规则 plugin_id:plugin_id.gradle.plugin:version
+    compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${libs.versions.ksp.get()}")
+    compileOnly("androidx.room:androidx.room.gradle.plugin:${libs.versions.androidx.room.get()}")
 //    https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 //    https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 //    https://github.com/JetBrains/kotlin/

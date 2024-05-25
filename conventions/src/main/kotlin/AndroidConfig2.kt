@@ -1,3 +1,4 @@
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
@@ -16,10 +17,12 @@ import wing.androidExtensionComponent
 import wing.chinaRepos
 import wing.log
 import wing.red
+import wing.vWings
 import wing.vlibs
 import java.io.File
 
-open class AndroidConfig : Plugin<Project> {
+open class AndroidConfig2 : Plugin<Project> {
+
 
     /**
      * ```kotlin
@@ -62,44 +65,117 @@ open class AndroidConfig : Plugin<Project> {
     open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { _ -> }
 
     override fun apply(target: Project) {
-        val androidConfig = AndroidBase(AndroidRoom())
-//        val androidConfig = AndroidBase()
         with(target) {
-            log("=========================== START【${this@AndroidConfig}】 =========================")
+            log("=========================== START【${this@AndroidConfig2}】 =========================")
             log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
             log("https://github.com/android/gradle-recipes")
 
             buildCacheDir()
+
             repoConfig()
 
             with(pluginManager) {
-                androidConfig.pluginConfigs()(target)
+                //<editor-fold desc="android project default plugin">
+                //如果根build.gradle没在plugins中apply的话这里无法依赖，之后补充自动依赖
+                apply("kotlin-android")
+//                apply("org.jetbrains.kotlin.android")
+                apply("kotlin-parcelize")
+                //</editor-fold>
                 pluginConfigs()()
             }
             val catalog = vlibs
+            val catalogWings = vWings
             androidExtensionComponent?.apply {
                 finalizeDsl { android ->
                     with(android) {
-                        androidConfig.androidExtensionConfig()(target, catalog)
+                        //<editor-fold desc="android project default config">
+                        compileSdk = catalog.findVersion("android-compileSdk").get().requiredVersion.toInt()
+                        defaultConfig {
+                            minSdk = catalog.findVersion("android-minSdk").get().requiredVersion.toInt()
+                            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                            vectorDrawables {
+                                useSupportLibrary = true
+                            }
+                        }
+                        buildFeatures {
+                            buildConfig = true
+                        }
+                        compileOptions {
+                            // Up to Java 11 APIs are available through desugaring
+                            // https://developer.android.com/studio/write/java11-minimal-support-table
+                            sourceCompatibility = JavaVersion.VERSION_18
+                            targetCompatibility = JavaVersion.VERSION_18
+                            encoding = "UTF-8"
+//                          isCoreLibraryDesugaringEnabled = true
+                        }
+                        //</editor-fold>
                         androidExtensionConfig()(target, catalog)
                     }
                 }
-                androidConfig.androidComponentsExtensionConfig()(target, catalog)
                 androidComponentsExtensionConfig()(target, catalog)
             }
             tasks.withType<KotlinCompile>().configureEach {
                 kotlinOptions {
-                    androidConfig.kotlinOptionsConfig()(target)
+                    freeCompilerArgs += "-Xcontext-receivers"
+                    jvmTarget = "18"
+//                    kotlinOptionsPlugin().invoke(this)
                     kotlinOptionsConfig()(target)
                 }
             }
 
             //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {
-                androidConfig.dependenciesConfig()(target, catalog)
+                //<editor-fold desc="android project default dependencies">
+                catalog.findLibrary("koin-bom").ifPresent { koinBom ->
+                    log("implementation(koin)")
+                    add("implementation", platform(koinBom))
+                    add("implementation", catalog.findBundle("koin").get())
+                }
+
+                catalog.findLibrary("okhttp-bom").ifPresent { okhttpBom ->
+                    log("implementation(okhttp-bom)")
+                    add("implementation", platform(okhttpBom))
+                    add("implementation", catalog.findBundle("okhttp").get())
+                }
+
+                catalog.findBundle("android-project").ifPresentOrElse({ androidProject ->
+                    log("implementation(android-project)")
+                    add("implementation", androidProject)
+                }) {
+                    log("implementation(androidx...appcompat)")
+                    add("implementation", catalog.findLibrary("androidx-navigation-ui-ktx").get())
+                    add("implementation", catalog.findLibrary("androidx-navigation-fragment-ktx").get())
+                    add("implementation", catalog.findLibrary("lifecycle-livedata-ktx").get())
+                    add("implementation", catalog.findLibrary("lifecycle-viewmodel-ktx").get())
+                    add("implementation", catalog.findLibrary("google-material").get())
+                    add("implementation", catalog.findLibrary("androidx-appcompat").get())
+                    add("implementation", catalog.findLibrary("androidx-core-ktx").get())
+                    add("implementation", catalog.findLibrary("androidx-constraintlayout").get())
+                }
+
+//                catalog.findBundle("android-view").ifPresent { views ->
+//                    log("implementation(android-view)")
+//                    add("implementation", views)
+//                }
+                catalog.findBundle("ktor").ifPresent { ktor ->
+                    log("implementation(ktor)")
+                    add("implementation", ktor)
+                }
+                catalog.findLibrary("test-junit").ifPresent { jUnit ->
+                    add("testImplementation", jUnit)
+                }
+                catalog.findBundle("androidx-benchmark").ifPresent { androidxBenchmark ->
+//                    包括 androidx-test-ext-junit , androidx-test-espresso-core
+                    add("androidTestImplementation", androidxBenchmark)
+                }
+                catalogWings?.findBundle("sparkj")?.ifPresent { sparkj ->
+                    log("implementation(sparkj)")
+                    add("implementation", sparkj)
+                }
+                //</editor-fold>
                 dependenciesConfig()(catalog)
             }
-            log("=========================== END【${this@AndroidConfig}】 =========================")
+            log("=========================== END【${this@AndroidConfig2}】 =========================")
 //            生成apk地址
 //            https://github.com/android/gradle-recipes/blob/agp-8.4/allProjectsApkAction/README.md
 //            com.android.build.gradle.internal.variant.VariantPathHelper.getApkLocation

@@ -11,3 +11,11 @@ class Hello {
         }
     }
 }
+
+@Entity
+class OWEvent(
+    @PrimaryKey val time: Int,
+    @ColumnInfo(name = "type") val type: Int,
+    @ColumnInfo(name = "feature") val feature: String,
+    @ColumnInfo(name = "data") val byteArray: ByteArray
+)
