@@ -33,6 +33,8 @@ import org.gradle.kotlin.dsl.getByType
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.jvm.optionals.getOrNull
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 
 fun Project.log(msg: String) {
@@ -137,3 +139,13 @@ fun RepositoryHandler.chinaRepos() {
 fun java.nio.file.Path.isGradleProject(): Boolean = if (!isDirectory()) false else listDirectoryEntries().any {
     it.toString() == "build.gradle.kts"
 }
+
+class ProjectRead(project: Project) : ReadOnlyProperty<Project, String> {
+    override fun getValue(thisRef: Project, property: KProperty<*>): String {
+        return thisRef.properties[property.name]?.toString() ?: System.getenv(property.name)
+    }
+}
+
+fun Project.prop(name: String) {}
+
+val a: Boolean by lazy { true }

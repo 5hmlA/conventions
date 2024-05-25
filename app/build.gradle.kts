@@ -60,5 +60,6 @@ android {
 }
 
 //dependencies {
+//    implementation(libs.bundles.android.view)
 //    implementation(project(":lib-test"))
 //}

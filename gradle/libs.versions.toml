@@ -291,12 +291,12 @@ android-view = [
     "androidx-recyclerview",
     "androidx-navigation-ui-ktx",
     "androidx-palette-ktx",
-    "androidx-webkit",
-    "google-material",
 ]
 
 # https://androidx.tech/artifacts-index
 android-project = [
+    "androidx-webkit",
+    "google-material",
     "androidx-activity-ktx",
     "androidx-appcompat",
     "androidx-window",

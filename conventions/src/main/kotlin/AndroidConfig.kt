@@ -62,7 +62,10 @@ open class AndroidConfig : Plugin<Project> {
     open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { _ -> }
 
     override fun apply(target: Project) {
-        val androidConfig = AndroidBase(AndroidRoom())
+        var androidConfig: Android = AndroidBase()
+        if (target.properties["config.android.room"] == "true") {
+            androidConfig = AndroidRoom(androidConfig)
+        }
 //        val androidConfig = AndroidBase()
         with(target) {
             log("=========================== START【${this@AndroidConfig}】 =========================")
