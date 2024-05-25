@@ -1,5 +1,9 @@
-package wing//以下是20种常见的颜色以及它们的 ANSI 转义码：
-//
+package wing
+
+//🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡 🔔 ☃️ ✨
+
+//以下是20种常见的颜色以及它们的 ANSI 转义码：
+
 //黑色（Black）：[30m
 //红色（Red）：[31m
 //绿色（Green）：[32m
@@ -36,3 +40,18 @@ val String.blue: String
     get() = "\u001B[94m${this}\u001B[0m"
 val String.purple: String
     get() = "\u001B[95m${this}\u001B[0m"
+
+val String.bgYellow: String
+    get() = "\u001B[43m${this}\u001B[0m"
+val String.bgGreenw: String
+    get() = "\u001B[42m${this}\u001B[0m"
+val String.bgRed: String
+    get() = "\u001B[41m${this}\u001B[0m"
+val String.bgBlue: String
+    get() = "\u001B[44m${this}\u001B[0m"
+val String.bgPurple: String
+    get() = "\u001B[45m${this}\u001B[0m"
+val String.bgCyan: String
+    get() = "\u001B[46m${this}\u001B[0m"
+val String.bgBlack: String
+    get() = "\u001B[40m${this}\u001B[0m"

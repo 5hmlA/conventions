@@ -34,8 +34,10 @@ import kotlin.jvm.optionals.getOrNull
 
 
 fun Project.log(msg: String) {
-//    println("\uD83C\uDF89 \uD83D\uDCE3 \uD83C\uDF97\uFE0F $name >>> $msg".yellow)
-    println("\uD83C\uDF97\uFE0F $name >>> $msg".yellow)
+    //🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡  🔔
+
+    //    println("🎗️ $name >>> $msg".yellow)
+    println("📣 $name >>> $msg".yellow)
 }
 
 
