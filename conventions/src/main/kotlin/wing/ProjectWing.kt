@@ -145,7 +145,3 @@ class ProjectRead(project: Project) : ReadOnlyProperty<Project, String> {
         return thisRef.properties[property.name]?.toString() ?: System.getenv(property.name)
     }
 }
-
-fun Project.prop(name: String) {}
-
-val a: Boolean by lazy { true }
