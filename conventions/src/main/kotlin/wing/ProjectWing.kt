@@ -175,7 +175,7 @@ fun Project.publish5hmlA(libDescription: String) {
             register("osp", MavenPublication::class.java) {
                 groupId = group.toString().lowercase()
                 //artifactId = name
-                version = "1.0"
+                version = this@publish5hmlA.version.toString()
                 afterEvaluate {
                     from(components["release"])
                 }
