@@ -29,7 +29,12 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getByType
+import java.io.ByteArrayOutputStream
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.jvm.optionals.getOrNull
@@ -143,5 +148,62 @@ fun java.nio.file.Path.isGradleProject(): Boolean = if (!isDirectory()) false el
 class ProjectRead(project: Project) : ReadOnlyProperty<Project, String> {
     override fun getValue(thisRef: Project, property: KProperty<*>): String {
         return thisRef.properties[property.name]?.toString() ?: System.getenv(property.name)
+    }
+}
+
+fun Project.gitUrl(): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "config", "--get", "remote.origin.url")
+        standardOutput = stdout
+    }
+    val remoteUrl = stdout.toString().trim()
+    println("Remote URL: ${remoteUrl.removeSuffix(".git")}")
+    return remoteUrl
+}
+
+fun Project.publish5hmlA(libDescription: String) {
+    val gitUrl = gitUrl()
+    extensions.getByType<PublishingExtension>().apply {
+        publications {
+            repositories {
+                maven {
+                    name = "LocalRepo"
+                    setUrl("repos")
+                }
+            }
+            register("osp", MavenPublication::class.java) {
+                groupId = group.toString().lowercase()
+                //artifactId = name
+                version = "1.0"
+                afterEvaluate {
+                    from(components["release"])
+                }
+
+                pom {
+                    description = libDescription
+                    url = gitUrl.removeSuffix(".git")
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("5hmlA")
+                            name.set("ZuYun")
+                            email.set("jonsa.jzy@gmail.com")
+                            url.set("https://github.com/5hmlA")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:$gitUrl")
+                        developerConnection.set("scm:git:ssh:${gitUrl.substring(6)}")
+                        url.set(gitUrl.removeSuffix(".git"))
+                    }
+                }
+            }
+        }
     }
 }
