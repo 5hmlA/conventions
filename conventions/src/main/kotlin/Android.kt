@@ -166,15 +166,19 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
         super.dependenciesConfig().invoke(this, project, catalog)
         //<editor-fold desc="android project default dependencies">
         catalog.findLibrary("koin-bom").ifPresent { koinBom ->
-            project.log("implementation(koin)")
-            add("implementation", platform(koinBom))
-            add("implementation", catalog.findBundle("koin").get())
+            catalog.findBundle("koin").ifPresent {
+                project.log("implementation(koin)")
+                add("implementation", platform(koinBom))
+                add("implementation", it)
+            }
         }
 
         catalog.findLibrary("okhttp-bom").ifPresent { okhttpBom ->
-            project.log("implementation(okhttp-bom)")
-            add("implementation", platform(okhttpBom))
-            add("implementation", catalog.findBundle("okhttp").get())
+            catalog.findBundle("okhttp").ifPresent {
+                project.log("implementation(okhttp-bom)")
+                add("implementation", platform(okhttpBom))
+                add("implementation", it)
+            }
         }
 
         catalog.findBundle("android-project").ifPresentOrElse({ androidProject ->
@@ -245,7 +249,6 @@ class AndroidRoom(pre: Android? = null) : BaseAndroid(pre) {
     override fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit =
         { project, catalog ->
             super.dependenciesConfig().invoke(this, project, catalog)
-            println("xxxxxxxxxxxxxxxxxxxxxxxxxx ${catalog.findBundle("androidx-room")}")
             catalog.findBundle("androidx-room").ifPresent {
                 add("implementation", it)
             }
