@@ -44,13 +44,13 @@ dependencies {
 }
 
 
-"======== class = ${this.javaClass.superclass}".print()
-"======== superclass= ${this.javaClass.superclass}".print()
-"======== rootProject= $rootProject".print()
+//"======== class = ${this.javaClass}".print()
+//"======== superclass= ${this.javaClass.superclass}".print()
+//"======== rootProject= $rootProject".print()
 
 //group = "osp.sparkj.plugin"
 group = "io.github.5hmlA"
-version = "1.3"
+version = "1.4"
 
 publishing {
     repositories {

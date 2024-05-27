@@ -168,6 +168,14 @@ fun Project.publish5hmlA(libDescription: String) {
         publications {
             repositories {
                 maven {
+                    name = "GithubPackages"
+                    url = uri("https://maven.pkg.github.com/5hmlA/sparkj")
+                    credentials {
+                        username = System.getenv("GITHUB_USER")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+                maven {
                     name = "LocalRepo"
                     setUrl("repos")
                 }
