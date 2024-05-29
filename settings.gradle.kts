@@ -10,6 +10,11 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
+    versionCatalogs {
+        create("wings") {
+            from(files("gradle/wings.versions.toml"))
+        }
+    }
     repositories {
         google()
         mavenCentral()
