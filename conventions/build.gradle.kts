@@ -50,7 +50,7 @@ dependencies {
 
 //group = "osp.sparkj.plugin"
 group = "io.github.5hmlA"
-version = "1.4"
+version = "1.5"
 
 publishing {
     repositories {
