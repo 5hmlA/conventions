@@ -6,8 +6,8 @@ import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.androidExtensionComponent
@@ -54,12 +54,12 @@ open class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { project, versionCatalog -> }
+    open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { _, _ -> }
 
     open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
 
 
-    open fun kotlinOptionsConfig(): KotlinCommonToolOptions.(Project) -> Unit = { project -> }
+    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { }
 
     /**
      * ```kotlin
@@ -70,7 +70,7 @@ open class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { versionCatalog -> }
+    open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { }
 
     override fun apply(target: Project) {
         // Registers a callback on the application of the Android Application plugin.
@@ -94,8 +94,8 @@ open class AbsAndroidConfig : Plugin<Project> {
                     }
                     androidComponentsExtensionConfig()(target, catalog)
                 }
-                tasks.withType<KotlinCompile>().configureEach {
-                    kotlinOptions {
+                tasks.withType<KotlinJvmCompile>().configureEach {
+                    compilerOptions {
                         kotlinOptionsConfig()(target)
                     }
                 }

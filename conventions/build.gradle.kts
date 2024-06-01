@@ -32,6 +32,7 @@ dependencies {
     //gradle plugin id 规则 plugin_id:plugin_id.gradle.plugin:version
     compileOnly("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:${libs.versions.ksp.get()}")
     compileOnly("androidx.room:androidx.room.gradle.plugin:${libs.versions.androidx.room.get()}")
+    compileOnly("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${libs.versions.kotlin.get()}")
 //    https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 //    https://plugins.gradle.org/plugin/org.jetbrains.kotlin.android
 //    https://github.com/JetBrains/kotlin/
@@ -50,7 +51,7 @@ dependencies {
 
 //group = "osp.sparkj.plugin"
 group = "io.github.5hmlA"
-version = "1.5"
+version = "2.0"
 
 publishing {
     repositories {

@@ -8,8 +8,8 @@ import org.gradle.kotlin.dsl.buildscript
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.repositories
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonToolOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.androidExtensionComponent
@@ -48,7 +48,7 @@ open class AndroidConfig : Plugin<Project> {
 
     open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
 
-    open fun kotlinOptionsConfig(): KotlinCommonToolOptions.(Project) -> Unit = {}
+    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = {}
 
     /**
      * ```kotlin
@@ -90,12 +90,21 @@ open class AndroidConfig : Plugin<Project> {
                 androidConfig.androidComponentsExtensionConfig()(target, catalog)
                 androidComponentsExtensionConfig()(target, catalog)
             }
-            tasks.withType<KotlinCompile>().configureEach {
-                kotlinOptions {
+
+            //https://kotlinlang.org/docs/gradle-compiler-options.html#target-the-jvm
+            tasks.withType<KotlinJvmCompile>().configureEach {
+                compilerOptions {
                     androidConfig.kotlinOptionsConfig()(target)
                     kotlinOptionsConfig()(target)
                 }
             }
+//            和上面等效
+//            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
+//                compilerOptions {
+//                    androidConfig.kotlinOptionsConfig()(target)
+//                    kotlinOptionsConfig()(target)
+//                }
+//            }
 
             //com.android.build.gradle.internal.scope.MutableTaskContainer
             dependencies {

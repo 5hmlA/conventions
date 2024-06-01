@@ -7,7 +7,7 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.isAndroidLibrary
@@ -44,7 +44,7 @@ interface Android {
 
     fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit
 
-    fun kotlinOptionsConfig(): KotlinJvmOptions.(Project) -> Unit
+    fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit
 
     /**
      * ```kotlin
@@ -100,7 +100,7 @@ open class BaseAndroid(val android: Android? = null) : Android {
             android?.androidComponentsExtensionConfig()?.invoke(this, project, versionCatalog)
         }
 
-    override fun kotlinOptionsConfig(): KotlinJvmOptions.(Project) -> Unit = { project ->
+    override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { project ->
         project.logger.log(LogLevel.DEBUG, "kotlinOptionsConfig()  ${this@BaseAndroid}".purple)
         android?.kotlinOptionsConfig()?.invoke(this, project)
     }
@@ -157,10 +157,11 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
         //</editor-fold>
     }
 
-    override fun kotlinOptionsConfig(): KotlinJvmOptions.(Project) -> Unit = { project ->
+    override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { project ->
         super.kotlinOptionsConfig().invoke(this, project)
-        freeCompilerArgs += "-Xcontext-receivers"
-        jvmTarget = "18"
+        freeCompilerArgs.add("-Xcontext-receivers")
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
     }
 
     override fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit = { project, catalog ->
