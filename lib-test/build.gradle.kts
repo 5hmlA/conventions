@@ -6,6 +6,7 @@ plugins {
 //    alias(libs.plugins.hilt) apply false
 //    alias(libs.plugins.ksp) apply false
 //    alias(libs.plugins.protobuf) apply false
+//    id("io.github.5hmlA.android.compose")
     id("io.github.5hmlA.android")
     id("io.github.5hmlA.knife")
 }
