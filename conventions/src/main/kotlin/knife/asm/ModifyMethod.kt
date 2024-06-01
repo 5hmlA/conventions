@@ -27,6 +27,10 @@ data class MethodAction(
     }
 }
 
+internal fun asmLog(level: Int = 0, msg: String) {
+    println("> ${Thread.currentThread().id} |-${"----".repeat(level)} $msg")
+}
+
 private fun String.isIgnore(): Boolean = this == "*"
 
 private fun String.compareContains(other: String): Boolean = this == other || this.contains(other)
@@ -97,7 +101,7 @@ internal class EmptyMethodVisitor(
     override fun visitCode() {
         super.visitCode()
         // 根据方法的返回类型插入相应的返回指令
-        println("EmptyMethodVisitor >> [$classMethod] > $methodDesc".purple)
+        asmLog(1, "EmptyMethodVisitor >> [$classMethod] > $methodDesc".purple)
         when (Type.getReturnType(methodDesc).sort) {
             Type.VOID -> {
                 // 如果返回类型是 void，插入 RETURN 指令
@@ -176,7 +180,10 @@ internal class RemoveInvokeMethodVisitor(
         } else {
             //移除的是方法里面调用的其他方法
             //不执行【super.visitMethodInsn()】那么就是移除方法的调用
-            println("RemoveInvokeMethodVisitor >> owner = [${owner}], name = [${name}], descriptor = [${descriptor}], in [$classMethod]".purple)
+            asmLog(
+                1,
+                "RemoveInvokeMethodVisitor >> owner=[${owner}], name=[${name}], descriptor=[${descriptor}], in [$classMethod]".purple
+            )
         }
     }
 }
@@ -220,7 +227,10 @@ internal class ChangeInvokeOwnerMethodVisitor(
             //没匹配到就不需要处理
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
         } else {
-            println("ChangeInvokeOwnerMethodVisitor >> owner = [${owner}], name = [${name}], descriptor = [${descriptor}], to [${methodAction.toNewClass}], in [$classMethod]".purple)
+            asmLog(
+                1,
+                "ChangeInvokeOwnerMethodVisitor >> owner=[${owner}], name=[${name}], descriptor=[${descriptor}], to [${methodAction.toNewClass}], in [$classMethod]".purple
+            )
             // 替换为新的类的静态方法调用
             super.visitMethodInsn(
                 Opcodes.INVOKESTATIC,

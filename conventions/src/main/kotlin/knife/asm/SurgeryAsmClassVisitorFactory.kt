@@ -138,11 +138,11 @@ class KnifeClassMethodVisitor(
             val targetDescriptor = modifyConfig.targetMethod.descriptor
             if (targetDescriptor == "*") {
                 //目标方法的descriptor规则为通配符，则忽略descriptor匹配，也就是说这个类的所有方法都匹配，全置空
-                println("KnifeClassMethodVisitor >> empty all fun in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+                asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need empty all method[*] -> method=[${name}], descriptor=[${descriptor}], signature=[${signature}], exceptions=[${exceptions}]".red)
                 return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
             } else if (targetDescriptor == descriptor) {
                 //表示匹配这个类下所有签名为descriptor的方法 (参数+返回值)
-                println("KnifeClassMethodVisitor >> empty all fun[$descriptor] in class:[$internalClass], fun :name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+                asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need empty method[$descriptor] -> name=[${name}], descriptor=[${descriptor}], signature=[${signature}], exceptions=[${exceptions}]".red)
                 return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
             }
         }
@@ -157,14 +157,14 @@ class KnifeClassMethodVisitor(
         }
 
         val fullMethodName = "$internalClass#$name"
-        println("KnifeClassMethodVisitor >> need modify [$fullMethodName], name = [${name}], descriptor = [${descriptor}], signature = [${signature}], exceptions = [${exceptions}]".red)
+        asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need modify -> method=[${name}], descriptor=[${descriptor}], signature=[${signature}], exceptions=[${exceptions}]".red)
         //方法置空处理
         val emptyMethodConfig = matchedModifyConfigs.find {
             it.methodAction == null
         }
         if (emptyMethodConfig != null) {
             //方法置空的话 后面就不需要处理了，后面都是方法内部的处理
-            println("need empty $emptyMethodConfig".green)
+            asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need empty $emptyMethodConfig".green)
             return EmptyMethodVisitor(apiVersion, name, descriptor, visitMethod)
         }
 
@@ -186,7 +186,7 @@ class KnifeClassMethodVisitor(
             }
 
             //这个方法内部的处理：只要移除某行调用
-            println("need remove $removeInvokeMethodActions".green)
+            asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need remove $removeInvokeMethodActions".green)
             return RemoveInvokeMethodVisitor(
                 fullMethodName,
                 removeInvokeMethodActions,
@@ -195,7 +195,7 @@ class KnifeClassMethodVisitor(
             )
         }
 
-        println("need change $changeInvokeMethodActions".green)
+        asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need change $changeInvokeMethodActions".green)
 
         val changeInvokeOwnerMethodVisitor = ChangeInvokeOwnerMethodVisitor(
             fullMethodName,
@@ -214,7 +214,7 @@ class KnifeClassMethodVisitor(
         }
 
         //这个方法内部的处理：既要修改调用方也要移除某行调用
-        println("need remove $removeInvokeMethodActions".green)
+        asmLog(msg = "KnifeClassMethodVisitor >> [$internalClass] > need remove $removeInvokeMethodActions".green)
         return RemoveInvokeMethodVisitor(
             fullMethodName,
             removeInvokeMethodActions,

@@ -27,14 +27,14 @@ class AGPKnifePlugin : AbsAndroidConfig() {
             val variantKnifeActionImpl = VariantKnifeActionImpl()
             variantKnifeActionImpl.createExtension(knifeExtension)
 
-            log("knife -> knifeExtension:${knifeImpl.onVariants}")
+            log("knife > knifeExtension:${knifeImpl.onVariants}")
 
             /**
              * plugin中的onVariants{}会优先执行 ,所以app中建议用 beforeVariants{}遍历和配置
              */
             onVariants(selector().all()) { variant: Variant ->
                 knifeImpl.onVariants?.let {
-                    log("knife -> onVariant:${variant.name}")
+                    log("knife > onVariant:${variant.name}")
                     variantKnifeActionImpl.doListenArtifact = {
                         //存在listenArtifact的时候才创建task
                         tryListenArtifact(variantKnifeActionImpl, project, variant)
@@ -53,7 +53,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
         project: Project,
         variant: Variant
     ) {
-        project.log("knife -> tryAsmTransform:${variant.name}  ${variantAction.transformConfigs}")
+        project.log("knife > tryAsmTransform:${variant.name}  ${variantAction.transformConfigs}")
         variantAction.transformConfigs?.let { configs ->
             val transformConfigs = TransformConfigImpl()
             configs(transformConfigs)
@@ -61,7 +61,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                 println(transformConfigs.modifyConfigs.toStr().red)
                 return
             }
-            project.log("knife -> tryAsmTransform:${variant.name}  ${transformConfigs.modifyConfigs.toStr()}".red)
+            project.log("knife > tryAsmTransform:${variant.name}  ${transformConfigs.modifyConfigs.toStr()}".red)
 
             val modifyConfigs = transformConfigs.modifyConfigs.map {
                 it.toModifyConfig()
@@ -80,11 +80,11 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                     it.value.groupBy { it.targetMethod.methodName }
                 }
                 mapValues.forEach { (key, value) ->
-                    project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
+                    project.log("knife > tryAsmTransform:${variant.name}  $key =================================".red)
                     value.forEach { t, u ->
-                        project.log("knife -> tryAsmTransform:${variant.name}       $t > ${u.map { it.methodAction ?: "EmptyMethod" }}".red)
+                        project.log("knife > tryAsmTransform:${variant.name}       $t > ${u.map { it.methodAction ?: "EmptyMethod" }}".red)
                     }
-                    project.log("knife -> tryAsmTransform:${variant.name}  $key =================================".red)
+                    project.log("knife > tryAsmTransform:${variant.name}  $key =================================".red)
                 }
                 params.methodConfigs.set(mapValues)
                 val modifyClasses = modifyConfigs.map { it.targetMethod.fullClass }.toSet()
@@ -98,7 +98,7 @@ class AGPKnifePlugin : AbsAndroidConfig() {
         project: Project,
         variant: Variant
     ) {
-        project.log("knife -> tryListenArtifact:${variant.name}")
+        project.log("knife > tryListenArtifact:${variant.name}")
         variantAction.listenArtifact?.let {
             val taskProvider =
                 project.tasks.register<TaskListenApk>("listenApkFor${variant.name}") {
