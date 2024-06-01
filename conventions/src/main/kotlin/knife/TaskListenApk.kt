@@ -1,12 +1,18 @@
 package knife
 
-import wing.blue
 import com.android.build.api.variant.BuiltArtifactsLoader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import wing.blue
 
 abstract class TaskListenApk : DefaultTask() {
 
@@ -42,14 +48,14 @@ abstract class TaskListenApk : DefaultTask() {
                 ?: throw RuntimeException("Cannot load APKs")
             builtArtifacts.elements.forEach {
                 listenArtifact?.invoke(it.outputFile)
-                println(" Got an APK at ${it.outputFile}".blue)
+                println("> Got an APK at ${it.outputFile}".blue)
             }
         }
         aarFile.orNull?.let {
             //library项目
             val file = it.asFile
             listenArtifact?.invoke(file.absolutePath)
-            println(" Got an AAR at $file".blue)
+            println("> Got an AAR at $file".blue)
         }
         // The above will only save the artifact themselves. It will not save the
         // metadata associated with them. Depending on our needs we may need to copy it.
