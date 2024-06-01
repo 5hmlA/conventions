@@ -27,7 +27,7 @@ interface Android {
      *     }
      * ```
      */
-    fun pluginConfigs(): PluginManager.(Project) -> Unit
+    context(Project) fun pluginConfigs(): PluginManager.() -> Unit
 
     /**
      * ```kotlin
@@ -40,11 +40,11 @@ interface Android {
      *     }
      * ```
      */
-    fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit
+    context(Project) fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit
 
-    fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit
+    context(Project) fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(VersionCatalog) -> Unit
 
-    fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit
+    context(Project) fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit
 
     /**
      * ```kotlin
@@ -55,7 +55,7 @@ interface Android {
      *     }
      * ```
      */
-    fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit
+    context(Project) fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit
 
 }
 
@@ -71,9 +71,9 @@ open class BaseAndroid(val android: Android? = null) : Android {
      *     }
      * ```
      */
-    override fun pluginConfigs(): PluginManager.(Project) -> Unit = {
-        it.log("pluginConfigs()  ${this@BaseAndroid}".purple)
-        android?.pluginConfigs()?.invoke(this, it)
+    context(Project) override fun pluginConfigs(): PluginManager.() -> Unit = {
+        log("pluginConfigs()  ${this@BaseAndroid}".purple)
+        android?.pluginConfigs()?.invoke(this)
     }
 
     /**
@@ -87,22 +87,22 @@ open class BaseAndroid(val android: Android? = null) : Android {
      *     }
      * ```
      */
-    override fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { project, versionCatalog ->
-        project.log("androidExtensionConfig()  ${this@BaseAndroid}".purple)
+    context(Project) override fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit = {
+        log("androidExtensionConfig()  ${this@BaseAndroid}".purple)
         //有需要的话执行父类逻辑
-        android?.androidExtensionConfig()?.invoke(this, project, versionCatalog)
+        android?.androidExtensionConfig()?.invoke(this, it)
     }
 
 
-    override fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit =
-        { project, versionCatalog ->
-            project.log("androidComponentsExtensionConfig()  ${this@BaseAndroid}".purple)
-            android?.androidComponentsExtensionConfig()?.invoke(this, project, versionCatalog)
+    context(Project) override fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(VersionCatalog) -> Unit =
+        {
+            log("androidComponentsExtensionConfig()  ${this@BaseAndroid}".purple)
+            android?.androidComponentsExtensionConfig()?.invoke(this, it)
         }
 
-    override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { project ->
+    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
         project.logger.log(LogLevel.DEBUG, "kotlinOptionsConfig()  ${this@BaseAndroid}".purple)
-        android?.kotlinOptionsConfig()?.invoke(this, project)
+        android?.kotlinOptionsConfig()?.invoke(this)
     }
 
     /**
@@ -114,16 +114,16 @@ open class BaseAndroid(val android: Android? = null) : Android {
      *     }
      * ```
      */
-    override fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit = { project, versionCatalog ->
-        project.log("dependenciesConfig()  ${this@BaseAndroid}".purple)
-        android?.dependenciesConfig()?.invoke(this, project, versionCatalog)
+    context(Project) override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = {
+        log("dependenciesConfig()  ${this@BaseAndroid}".purple)
+        android?.dependenciesConfig()?.invoke(this, it)
     }
 }
 
 class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
 
-    override fun pluginConfigs(): PluginManager.(Project) -> Unit = {
-        super.pluginConfigs().invoke(this, it)
+    context(Project) override fun pluginConfigs(): PluginManager.() -> Unit = {
+        super.pluginConfigs().invoke(this)
         //<editor-fold desc="android project default plugin">
         //如果根build.gradle没在plugins中apply的话这里无法依赖，之后补充自动依赖
         apply("kotlin-android")
@@ -132,8 +132,8 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
         //</editor-fold>
     }
 
-    override fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { project, catalog ->
-        super.androidExtensionConfig().invoke(this, project, catalog)
+    context(Project) override fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit = { catalog ->
+        super.androidExtensionConfig().invoke(this, catalog)
         //<editor-fold desc="android project default config">
         compileSdk = catalog.findVersion("android-compileSdk").get().requiredVersion.toInt()
         defaultConfig {
@@ -157,15 +157,15 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
         //</editor-fold>
     }
 
-    override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { project ->
-        super.kotlinOptionsConfig().invoke(this, project)
+    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
+        super.kotlinOptionsConfig().invoke(this)
         freeCompilerArgs.add("-Xcontext-receivers")
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+//        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
         languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
     }
 
-    override fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit = { project, catalog ->
-        super.dependenciesConfig().invoke(this, project, catalog)
+    context(Project) override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { catalog ->
+        super.dependenciesConfig().invoke(this, catalog)
         val androidLibrary = project.isAndroidLibrary
         //library默认不添加依赖,除非配置了config.android.dependencies.force=true
         if (!androidLibrary or project.hasProperty("config.android.dependencies.force")) {
@@ -229,39 +229,35 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
 class AndroidRoom(pre: Android? = null) : BaseAndroid(pre) {
     private fun Project.ksp(config: KspExtension.() -> Unit) = extensions.getByType<KspExtension>().config()
     private fun Project.room(config: RoomExtension.() -> Unit) = extensions.getByType<RoomExtension>().config()
-    override fun pluginConfigs(): PluginManager.(Project) -> Unit = {
-        super.pluginConfigs().invoke(this, it)
+    context(Project) override fun pluginConfigs(): PluginManager.() -> Unit = {
+        super.pluginConfigs().invoke(this)
         apply("androidx.room")
         apply("com.google.devtools.ksp")
+        //https://kotlinlang.org/docs/ksp-quickstart.html#create-a-processor-of-your-own
+        ksp {
+            //room 配置 生成 Kotlin 源文件，而非 Java 代码。需要 KSP。默认值为 false。 有关详情，请参阅版本 2.6.0 的说明
+            arg("room.generateKotlin", "true")
+        }
 
-        with(it) {
-            //https://kotlinlang.org/docs/ksp-quickstart.html#create-a-processor-of-your-own
-            ksp {
-                //room 配置 生成 Kotlin 源文件，而非 Java 代码。需要 KSP。默认值为 false。 有关详情，请参阅版本 2.6.0 的说明
-                arg("room.generateKotlin", "true")
-            }
-
-            //room 指南
-            //对于非 Android 库（即仅支持 Java 或 Kotlin 的 Gradle 模块），您可以依赖 androidx.room:room-common 来使用 Room 注解
-            //https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
-            room {
-                //使用 Room Gradle 插件时需要设置 schemaDirectory。这会配置 Room 编译器以及各种编译任务及其后端（javac、KAPT、KSP），
-                //以将架构文件输出到变种文件夹（例如 schemas/flavorOneDebug/com.package.MyDatabase/1.json）中。这些文件应签入代码库中，以用于验证和自动迁移。
-                schemaDirectory("$projectDir/schemas")
-            }
+        //room 指南
+        //对于非 Android 库（即仅支持 Java 或 Kotlin 的 Gradle 模块），您可以依赖 androidx.room:room-common 来使用 Room 注解
+        //https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
+        room {
+            //使用 Room Gradle 插件时需要设置 schemaDirectory。这会配置 Room 编译器以及各种编译任务及其后端（javac、KAPT、KSP），
+            //以将架构文件输出到变种文件夹（例如 schemas/flavorOneDebug/com.package.MyDatabase/1.json）中。这些文件应签入代码库中，以用于验证和自动迁移。
+            schemaDirectory("$projectDir/schemas")
         }
     }
 
-    override fun dependenciesConfig(): DependencyHandlerScope.(Project, VersionCatalog) -> Unit =
-        { project, catalog ->
-            super.dependenciesConfig().invoke(this, project, catalog)
-            catalog.findBundle("androidx-room").ifPresent {
-                add("implementation", it)
-            }
-            catalog.findLibrary("androidx-room-compiler").ifPresent {
-                add("annotationProcessor", it)
-                // To use Kotlin Symbol Processing (KSP)
-                add("ksp", it)
-            }
+    context(Project) override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { catalog ->
+        super.dependenciesConfig().invoke(this, catalog)
+        catalog.findBundle("androidx-room").ifPresent {
+            add("implementation", it)
         }
+        catalog.findLibrary("androidx-room-compiler").ifPresent {
+            add("annotationProcessor", it)
+            // To use Kotlin Symbol Processing (KSP)
+            add("ksp", it)
+        }
+    }
 }

@@ -31,6 +31,11 @@ import wing.vlibs
  */
 open class AbsAndroidConfig : Plugin<Project> {
 
+
+    context(Project)
+    open fun onProject() {
+    }
+
     /**
      * ```kotlin
      *     override fun pluginConfigs(): PluginManager.() -> Unit = {
@@ -41,6 +46,7 @@ open class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
+    context(Project)
     open fun pluginConfigs(): PluginManager.() -> Unit = {}
 
     /**
@@ -54,12 +60,15 @@ open class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
-    open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { _, _ -> }
+    context(Project)
+    open fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit = { _ -> }
 
-    open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
+    context(Project)
+    open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(VersionCatalog) -> Unit = { _ -> }
 
 
-    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = { }
+    context(Project)
+    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = { }
 
     /**
      * ```kotlin
@@ -70,6 +79,7 @@ open class AbsAndroidConfig : Plugin<Project> {
      *     }
      * ```
      */
+    context(Project)
     open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { }
 
     override fun apply(target: Project) {
@@ -82,6 +92,7 @@ open class AbsAndroidConfig : Plugin<Project> {
                 log("=========================== START【${this@AbsAndroidConfig}】 =========================")
                 log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
                 log("https://github.com/android/gradle-recipes")
+                onProject()
                 with(pluginManager) {
                     pluginConfigs()()
                 }
@@ -89,20 +100,40 @@ open class AbsAndroidConfig : Plugin<Project> {
                 androidExtensionComponent?.apply {
                     finalizeDsl { android ->
                         with(android) {
-                            androidExtensionConfig()(target, catalog)
+                            androidExtensionConfig()(catalog)
                         }
                     }
-                    androidComponentsExtensionConfig()(target, catalog)
+                    androidComponentsExtensionConfig()(catalog)
                 }
+
+                //https://kotlinlang.org/docs/gradle-compiler-options.html#target-the-jvm
                 tasks.withType<KotlinJvmCompile>().configureEach {
                     compilerOptions {
-                        kotlinOptionsConfig()(target)
+                        kotlinOptionsConfig()()
                     }
                 }
+                //和上面等效
+                //tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
+                //    compilerOptions {
+                //        androidConfig.kotlinOptionsConfig()(target)
+                //        kotlinOptionsConfig()(target)
+                //    }
+                //}
                 dependencies {
                     dependenciesConfig()(catalog)
                 }
                 log("=========================== END【${this@AbsAndroidConfig}】 =========================")
+                //生成apk地址
+                //https://github.com/android/gradle-recipes/blob/agp-8.4/allProjectsApkAction/README.md
+                //com.android.build.gradle.internal.variant.VariantPathHelper.getApkLocation
+                //com.android.build.gradle.internal.variant.VariantPathHelper.getDefaultApkLocation
+                //com.android.build.gradle.tasks.PackageApplication
+
+                //layout.buildDirectory.set(f.absolutePath)
+                //修改as生成缓存的地址
+
+                //transform
+                //https://github.com/android/gradle-recipes/blob/agp-8.4/transformAllClasses/README.md
             }
         }
     }

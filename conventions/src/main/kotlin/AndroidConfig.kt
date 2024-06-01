@@ -1,135 +1,56 @@
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.buildscript
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.repositories
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
-import wing.androidExtensionComponent
 import wing.chinaRepos
 import wing.log
 import wing.red
-import wing.vlibs
 import java.io.File
 
-open class AndroidConfig : Plugin<Project> {
+open class AndroidConfig : AbsAndroidConfig() {
 
-    /**
-     * ```kotlin
-     *     override fun pluginConfigs(): PluginManager.() -> Unit = {
-     *         //有需要的话执行父类逻辑
-     *         super.pluginConfigs().invoke(this)
-     *         //执行自己的逻辑
-     *         apply("kotlin-android")
-     *     }
-     * ```
-     */
-    open fun pluginConfigs(): PluginManager.() -> Unit = {}
+    var androidConfig: Android? = null
 
-    /**
-     * ```kotlin
-     *     override fun androidExtensionConfig(): AndroidExtension.(Project, VersionCatalog) -> Unit {
-     *         return { project, versionCatalog ->
-     *             //有需要的话执行父类逻辑
-     *             super.androidExtensionConfig().invoke(this,project,versionCatalog)
-     *             //自己特有的逻辑
-     *         }
-     *     }
-     * ```
-     */
-    open fun androidExtensionConfig(): AndroidCommonExtension.(Project, VersionCatalog) -> Unit = { _, _ -> }
-
-    open fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(Project, VersionCatalog) -> Unit = { _, _ -> }
-
-    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.(Project) -> Unit = {}
-
-    /**
-     * ```kotlin
-     *     override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { vlibs: VersionCatalog ->
-     *         //有需要的话执行父类逻辑
-     *         super.dependenciesConfig().invoke(this, vlibs)
-     *         //自己特有的逻辑
-     *     }
-     * ```
-     */
-    open fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { _ -> }
-
-    override fun apply(target: Project) {
-        var androidConfig: Android = AndroidBase()
-        if (target.properties["config.android.room"] == "true") {
+    context(Project) override fun onProject() {
+        androidConfig = AndroidBase()
+        if (findProperty("config.android.room") == "true") {
             androidConfig = AndroidRoom(androidConfig)
         }
-//        val androidConfig = AndroidBase()
-        with(target) {
-            log("=========================== START【${this@AndroidConfig}】 =========================")
-            log("常见构建自定义的即用配方，展示如何使用Android Gradle插件的公共API和DSL:")
-            log("https://github.com/android/gradle-recipes")
+        buildCacheDir()
+        repoConfig()
+    }
 
-            buildCacheDir()
-            repoConfig()
+    context(Project) override fun pluginConfigs(): PluginManager.() -> Unit = {
+        androidConfig?.pluginConfigs()?.invoke(this)
+    }
 
-            with(pluginManager) {
-                androidConfig.pluginConfigs()(target)
-                pluginConfigs()()
-            }
-            val catalog = vlibs
-            androidExtensionComponent?.apply {
-                finalizeDsl { android ->
-                    with(android) {
-                        androidConfig.androidExtensionConfig()(target, catalog)
-                        androidExtensionConfig()(target, catalog)
-                    }
-                }
-                androidConfig.androidComponentsExtensionConfig()(target, catalog)
-                androidComponentsExtensionConfig()(target, catalog)
-            }
 
-            //https://kotlinlang.org/docs/gradle-compiler-options.html#target-the-jvm
-            tasks.withType<KotlinJvmCompile>().configureEach {
-                compilerOptions {
-                    androidConfig.kotlinOptionsConfig()(target)
-                    kotlinOptionsConfig()(target)
-                }
-            }
-//            和上面等效
-//            tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
-//                compilerOptions {
-//                    androidConfig.kotlinOptionsConfig()(target)
-//                    kotlinOptionsConfig()(target)
-//                }
-//            }
+    context(Project) override fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit = {
+        androidConfig?.androidExtensionConfig()?.invoke(this, it)
+    }
 
-            //com.android.build.gradle.internal.scope.MutableTaskContainer
-            dependencies {
-                androidConfig.dependenciesConfig()(target, catalog)
-                dependenciesConfig()(catalog)
-            }
-            log("=========================== END【${this@AndroidConfig}】 =========================")
-//            生成apk地址
-//            https://github.com/android/gradle-recipes/blob/agp-8.4/allProjectsApkAction/README.md
-//            com.android.build.gradle.internal.variant.VariantPathHelper.getApkLocation
-//            com.android.build.gradle.internal.variant.VariantPathHelper.getDefaultApkLocation
-//            com.android.build.gradle.tasks.PackageApplication
+    context(Project) override fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(VersionCatalog) -> Unit = {
+        androidConfig?.androidComponentsExtensionConfig()?.invoke(this, it)
+    }
 
-//            layout.buildDirectory.set(f.absolutePath)
-//            修改as生成缓存的地址
+    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
+        androidConfig?.kotlinOptionsConfig()?.invoke(this)
+    }
 
-//            transform
-//            https://github.com/android/gradle-recipes/blob/agp-8.4/transformAllClasses/README.md
-        }
+    context(Project) override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = {
+        androidConfig?.dependenciesConfig()?.invoke(this, it)
     }
 
     private fun Project.buildCacheDir() {
-        log("========= Project.layout ${layout.buildDirectory.javaClass} ${layout.buildDirectory.asFile.get().absolutePath}")
+        log("========= Project.layout[buildDir] ${layout.buildDirectory.javaClass} ${layout.buildDirectory.asFile.get().absolutePath}")
         log("👉 set『build.cache.root.dir=D』can change build cache dir to D:/0buildCache/")
-//      log("========= Project.buildDir ${buildDir} =========================")
+        //log("========= Project.buildDir ${buildDir} =========================")
         val buildDir = properties["build.cache.root.dir"] ?: System.getenv("build.cache.root.dir")
         buildDir?.let {
             //https://github.com/gradle/gradle/issues/20210

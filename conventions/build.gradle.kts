@@ -23,6 +23,15 @@ repositories {
     google()
 }
 
+//For both the JVM and Android projects, it's possible to define options using the project Kotlin extension DSL:
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+    }
+}
+
 dependencies {
     //includeBuild()中拿不到项目的properties，这里通过System.property取
 //    编译插件的时候就会用到，不需要配置，编译的时候修改就行了
@@ -108,7 +117,8 @@ gradlePlugin {
         register("protobuf-config") {
             id = "${group}.protobuf"
             displayName = "protobuf config plugin"
-            description = "protobuf config for any gradle project, necessary configuration and dependencies will be automatically set up"
+            description =
+                "protobuf config for any gradle project, necessary configuration and dependencies will be automatically set up"
             tags = listOf("protobuf", "config", "convention")
             implementationClass = "ProtobufConfig"
         }
@@ -125,7 +135,8 @@ gradlePlugin {
         create("proto-convention") {
             id = "${group}.protobuf-convention"
             displayName = "protobuf convention plugin"
-            description = "protobuf convention for any gradle project, necessary configuration and dependencies will be automatically set up"
+            description =
+                "protobuf convention for any gradle project, necessary configuration and dependencies will be automatically set up"
             tags = listOf("protobuf", "config", "convention")
             implementationClass = "ProtobufConventionPlugin"
         }

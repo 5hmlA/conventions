@@ -46,7 +46,7 @@ fun Project.log(msg: String) {
     //🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡  🔔
 
     //    println("🎗️ $name >>> $msg".yellow)
-    println("📣 $name -> $msg".yellow)
+    println("📣 $name--> tid:${Thread.currentThread().id} $msg".yellow)
 }
 
 internal val Project.vlibs
