@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.isAndroidLibrary
+import wing.kspSourceSets
 import wing.log
 import wing.purple
 import wing.vWings
@@ -249,6 +250,11 @@ class AndroidRoom(pre: Android? = null) : BaseAndroid(pre) {
             //以将架构文件输出到变种文件夹（例如 schemas/flavorOneDebug/com.package.MyDatabase/1.json）中。这些文件应签入代码库中，以用于验证和自动迁移。
             schemaDirectory("$projectDir/schemas")
         }
+    }
+
+    context(Project) override fun androidExtensionConfig(): AndroidCommonExtension.(VersionCatalog) -> Unit = {
+        super.androidExtensionConfig()(this, it)
+        kspSourceSets()
     }
 
     context(Project) override fun dependenciesConfig(): DependencyHandlerScope.(VersionCatalog) -> Unit = { catalog ->

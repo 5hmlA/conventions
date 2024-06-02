@@ -121,6 +121,17 @@ fun Collection<*>.toStr(): String {
     return toTypedArray().contentToString()
 }
 
+fun AndroidCommonExtension.kspSourceSets() {
+    sourceSets.getByName("main") {
+        kotlin {
+            srcDirs(
+                "build/generated/ksp/main/kotlin",
+                "build/generated/ksp/main/java"
+            )
+        }
+    }
+}
+
 fun RepositoryHandler.chinaRepos() {
     maven {
         name = "tencent"

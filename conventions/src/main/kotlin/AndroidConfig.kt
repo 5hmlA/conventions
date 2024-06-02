@@ -15,7 +15,7 @@ import java.io.File
 
 open class AndroidConfig : AbsAndroidConfig() {
 
-    var androidConfig: Android? = null
+    private var androidConfig: Android? = null
 
     context(Project) override fun onProject() {
         androidConfig = AndroidBase()

@@ -13,6 +13,7 @@ import wing.vlibs
  */
 
 class ProtobufConfig : Plugin<Project> {
+
     override fun apply(target: Project) {
         with(target) {
             log("=========================== START【${this@ProtobufConfig}】 =========================")

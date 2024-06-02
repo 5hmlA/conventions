@@ -9,7 +9,6 @@ import wing.AndroidCommonExtension
 
 class AndroidComposeConfig : AndroidConfig() {
 
-
     context(Project) override fun pluginConfigs(): PluginManager.() -> Unit = {
         super.pluginConfigs()(this)
         //https://developer.android.google.cn/develop/ui/compose/compiler?hl=zh-cn
