@@ -6,7 +6,7 @@ import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
@@ -68,7 +68,7 @@ open class AbsAndroidConfig : Plugin<Project> {
 
 
     context(Project)
-    open fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = { }
+    open fun kotlinOptionsConfig(): KotlinJvmCompilerOptions.() -> Unit = { }
 
     /**
      * ```kotlin

@@ -5,7 +5,7 @@ import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.buildscript
 import org.gradle.kotlin.dsl.repositories
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.chinaRepos
@@ -39,7 +39,7 @@ open class AndroidConfig : AbsAndroidConfig() {
         androidConfig?.androidComponentsExtensionConfig()?.invoke(this, it)
     }
 
-    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
+    context(Project) override fun kotlinOptionsConfig(): KotlinJvmCompilerOptions.() -> Unit = {
         androidConfig?.kotlinOptionsConfig()?.invoke(this)
     }
 

@@ -7,7 +7,8 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.PluginManager
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
 import wing.AndroidCommonExtension
 import wing.AndroidComponentsExtensions
 import wing.isAndroidLibrary
@@ -44,7 +45,7 @@ interface Android {
 
     context(Project) fun androidComponentsExtensionConfig(): AndroidComponentsExtensions.(VersionCatalog) -> Unit
 
-    context(Project) fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit
+    context(Project) fun kotlinOptionsConfig(): KotlinJvmCompilerOptions.() -> Unit
 
     /**
      * ```kotlin
@@ -100,7 +101,7 @@ open class BaseAndroid(val android: Android? = null) : Android {
             android?.androidComponentsExtensionConfig()?.invoke(this, it)
         }
 
-    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
+    context(Project) override fun kotlinOptionsConfig(): KotlinJvmCompilerOptions.() -> Unit = {
         project.logger.log(LogLevel.DEBUG, "kotlinOptionsConfig()  ${this@BaseAndroid}".purple)
         android?.kotlinOptionsConfig()?.invoke(this)
     }
@@ -157,10 +158,11 @@ class AndroidBase(pre: Android? = null) : BaseAndroid(pre) {
         //</editor-fold>
     }
 
-    context(Project) override fun kotlinOptionsConfig(): KotlinCommonCompilerOptions.() -> Unit = {
+    context(Project) override fun kotlinOptionsConfig(): KotlinJvmCompilerOptions.() -> Unit = {
         super.kotlinOptionsConfig().invoke(this)
+        jvmTarget.set(JvmTarget.JVM_18)
         freeCompilerArgs.add("-Xcontext-receivers")
-//        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
+        //apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
         languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0)
     }
 
