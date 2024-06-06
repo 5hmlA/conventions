@@ -43,10 +43,10 @@ import kotlin.reflect.KProperty
 
 
 fun Project.log(msg: String) {
-    //🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡  🔔
+    //🎉 📣 🎗️ 🔥 📜 💯 📸 🎲 🚀 💡  🔔 🔪 🐼
 
     //    println("🎗️ $name >>> $msg".yellow)
-    println("📣 $name--> tid:${Thread.currentThread().id} $msg".yellow)
+    println("💡 $name--> tid:${Thread.currentThread().id} $msg".yellow)
 }
 
 internal val Project.vlibs
@@ -174,7 +174,11 @@ fun Project.gitUrl(): String {
     return remoteUrl
 }
 
-fun Project.publish5hmlA(libDescription: String) {
+fun Project.publishJava5hmlA(libDescription: String) {
+    publish5hmlA(libDescription, "java")
+}
+
+fun Project.publish5hmlA(libDescription: String, component: String = "release") {
     if (!pluginManager.hasPlugin("maven-publish")) {
         pluginManager.apply("maven-publish")
     }
@@ -195,12 +199,12 @@ fun Project.publish5hmlA(libDescription: String) {
                     setUrl("repos")
                 }
             }
-            register("osp", MavenPublication::class.java) {
+            register("Spark", MavenPublication::class.java) {
                 groupId = group.toString().lowercase()
                 //artifactId = name
                 version = this@publish5hmlA.version.toString()
                 afterEvaluate {
-                    from(components["release"])
+                    from(components[component])
                 }
 
                 pom {
