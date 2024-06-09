@@ -9,7 +9,7 @@ plugins {
 }
 
 fun String.print() {
-    println("\u001B[93m🔔 $name >> ${this}\u001B[0m")
+    println("\u001B[93m✨ $name >> ${this}\u001B[0m")
 }
 
 fun sysprop(name: String, def: String): String {
@@ -60,7 +60,7 @@ dependencies {
 
 //group = "osp.sparkj.plugin"
 group = "io.github.5hmlA"
-version = "2.0.0"
+version = "2.0.2"
 
 publishing {
     repositories {

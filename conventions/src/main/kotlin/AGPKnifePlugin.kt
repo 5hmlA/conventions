@@ -5,7 +5,7 @@ import knife.KnifeImpl
 import knife.TaskListenApk
 import knife.TransformConfigImpl
 import knife.VariantKnifeActionImpl
-import knife.asm.SurgeryAsmClassVisitorFactory
+import knife.asm.KnifeAsmClassVisitorFactory
 import knife.asm.toModifyConfig
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
@@ -69,8 +69,13 @@ class AGPKnifePlugin : AbsAndroidConfig() {
 
             //https://github1s.com/android/gradle-recipes/blob/agp-8.2/asmTransformClasses/build-logic/plugins/src/main/kotlin/CheckAsmTransformationTask.kt
             //https://github1s.com/android/gradle-recipes/blob/agp-8.2/asmTransformClasses/build-logic/plugins/src/main/kotlin/CustomPlugin.kt
+//            variant.instrumentation.setAsmFramesComputationMode(
+//                FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS
+//            )
+            //COPY_FRAMES是默认值
+            //FramesComputationMode.COPY_FRAMES 此Mode修改方法和操作变量后要自己计算
             variant.instrumentation.transformClassesWith(
-                SurgeryAsmClassVisitorFactory::class.java,
+                KnifeAsmClassVisitorFactory::class.java,
                 InstrumentationScope.ALL,
             ) { params ->
                 params.buildType.set(variant.buildType)
@@ -80,13 +85,13 @@ class AGPKnifePlugin : AbsAndroidConfig() {
                     it.value.groupBy { it.targetMethod.methodName }
                 }
                 mapValues.forEach { (key, value) ->
-                    project.log("knife > tryAsmTransform:${variant.name}  $key =================================".red)
-                    value.forEach { t, u ->
-                        project.log("knife > tryAsmTransform:${variant.name}       $t > ${u.map { it.methodAction ?: "EmptyMethod" }}".red)
+                    project.log("knife > tryAsmTransform:${variant.name} 👇👇👇👇👇👇👇👇👇👇 $key 👇👇👇👇👇👇👇👇👇👇".red)
+                    value.forEach { (t, u) ->
+                        project.log("knife > tryAsmTransform:${variant.name}       $t > ${u.map { it.methodAction }}".red)
                     }
-                    project.log("knife > tryAsmTransform:${variant.name}  $key =================================".red)
+                    project.log("knife > tryAsmTransform:${variant.name} 👆👆👆👆👆👆👆👆👆👆 $key 👆👆👆👆👆👆👆👆👆👆 ".red)
                 }
-                params.methodConfigs.set(mapValues)
+                params.classConfigs.set(mapValues)
                 val modifyClasses = modifyConfigs.map { it.targetMethod.fullClass }.toSet()
                 params.targetClasses.set(modifyClasses)
             }

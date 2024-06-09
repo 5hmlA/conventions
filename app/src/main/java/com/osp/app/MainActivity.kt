@@ -30,9 +30,15 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        val emptyAllMethod = EmptyAllMethod(1, "1", 2.1)
+        println("xxxxxxxx")
         testRemove(1)
         testEmpty(10)
         testChange(9)
+
+        emptyAllMethod.method2("90")
+
+        println(testEmptyList(10))
     }
 
     fun testRemove(num: Int) {
@@ -51,5 +57,17 @@ class MainActivity : AppCompatActivity() {
         println("xxxxxxxxxxxxxx")
         println("xxxxxxxxxxxxxx ${num * 2}")
         return num * 2.0F
+    }
+
+    fun testEmptyList(num: Int): List<String>? {
+        println("xxxxxxxxxxxxxx")
+        println("xxxxxxxxxxxxxx ${num * 2}")
+        return null
+    }
+
+    fun testTryCatch(num: Int): List<String> {
+        println("xxxxxxxxxxxxxx")
+        println("xxxxxxxxxxxxxx ${num * 2}")
+        return emptyList()
     }
 }
